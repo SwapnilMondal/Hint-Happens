@@ -1,27 +1,23 @@
 # Hint Happens!
 
-A mobile-first two-player browser word guessing game. No installation or app download is required.
+A mobile-first two-player browser word guessing game. No app install is required.
 
 ## Features
-- Seven categories: Animals, Countries, Food, Places, Movies, Music, Sports.
-- 100 unique words per category (700 entries in the shipped deck).
-- 5- or 10-round matches, easy/medium/hard/mixed difficulty, and custom-word mode.
-- Host clue cards, 60-second rounds, randomly revealed letters, scoring and streaks.
-- Category-specific colour themes and synthesized sound effects (toggleable on either phone).
-- Two-player rooms via PeerJS; host rejects additional incoming connections.
-- Recent-word cache: host browser remembers words from the previous 10 sessions in localStorage. It is not shared between devices/browsers.
+- Seven word categories; themed colors and clues.
+- 5/10 rounds, difficulty modes, custom words, 60-second rounds, random letter reveals and scoring.
+- PeerJS room-based two-phone play.
+- Synthesized game sound effects.
+- Radio dock: low-volume YouTube embedded radio streams/mix, play/mute toggle and random next station. Host selects and relays station/time state to the guest. Guests may need to tap Radio once to satisfy browser autoplay restrictions.
+- Word history: the host browser stores recent words in sessionStorage, up to 10 match sessions. It clears when the browser tab/session is closed, not on game exit.
 
-## Run locally
-Open `index.html` in a browser, or serve the folder with a static web server. PeerJS signaling requires internet.
+## Run
+Open index.html in a modern mobile browser. Internet is required for PeerJS and YouTube embeds.
 
-## Publish with GitHub Pages
-1. Ensure `index.html` is in the repository root.
-2. In repository Settings → Pages, select **GitHub Actions** as the deployment source if it isn't already selected.
-3. Push `index.html` to `main`. The workflow in `.github/workflows/pages.yml` deploys it automatically.
-4. Share the published HTTPS URL. Players open the same URL on their phones, create/join a room, and play.
+## Deploy
+The GitHub Actions workflow in .github/workflows/pages.yml deploys the static site when index.html changes on main. Set repository Settings → Pages → Source to GitHub Actions if needed.
 
-## Notes
-- No framework is needed: this is a static vanilla JavaScript app, so it has no bundling/build step.
-- Word history is stored on the host's browser only. Exiting the match clears the room but retains the host's recent-word cache.
-- Real two-phone connection testing is still required; browser testing here was blocked by the local-browser policy. JavaScript syntax and word-bank integrity checks passed.
-- The repository already has a `CNAME` for `hinthappens.io`; custom-domain DNS and Pages settings must also be configured.
+## Radio notes
+YouTube is embedded in its player (no separate music files are downloaded by this game). YouTube still loads its player/video and may show ads, apply restrictions, collect its normal usage data, and block playback depending on the device/browser. The selected live streams will align by live broadcast, but a YouTube auto-generated Mix can vary across accounts and may not be perfectly synchronized after its initial track.
+
+## Testing
+JavaScript syntax checked with Node. Two-phone peer connection and radio playback/synchronization require live device testing.
