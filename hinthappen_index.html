@@ -23,6 +23,7 @@ function safeRadioTrack(raw){
   if(!uuid||!name)return null;return {uuid,name,genre:String(raw.genre||'Radio').slice(0,40),url:u.href}
  }catch{return null}
 }
+function radioFlag(value){return value===true||value===1||value==='1'||String(value).toLowerCase()==='true'}
 async function radioFetchStations(tag){
  const qs=new URLSearchParams({tag,hidebroken:'true',is_https:'true',codec:'MP3',bitrateMin:'64',order:'random',limit:'80'});
  const start=Math.floor(Math.random()*RADIO_API_MIRRORS.length);
@@ -31,7 +32,7 @@ async function radioFetchStations(tag){
   try{const response=await fetch(base+'/json/stations/search?'+qs.toString(),{method:'GET',mode:'cors',credentials:'omit',cache:'no-store',signal:controller.signal});
    if(!response.ok)throw new Error('Radio directory unavailable');const data=await response.json();
    if(!Array.isArray(data))throw new Error('Invalid radio directory response');
-   return data.filter(x=>x&&String(x.lastcheckok)==='1'&&String(x.hls||'0')!=='1'&&String(x.codec||'').toUpperCase()==='MP3'&&x.stationuuid&&(x.url_resolved||x.url));
+   return data.filter(x=>x&&radioFlag(x.lastcheckok)&&!radioFlag(x.hls)&&String(x.codec||'').toUpperCase()==='MP3'&&x.stationuuid&&(x.url_resolved||x.url));
   }catch(e){if(n===RADIO_API_MIRRORS.length-1)throw e}finally{clearTimeout(timer)}
  }return [];
 }
