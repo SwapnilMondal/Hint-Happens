@@ -1,23 +1,33 @@
 # Hint Happens!
 
-A mobile-first two-player browser word guessing game. No app install is required.
+A mobile-first two-player browser word guessing game. No app install, root access, backend deployment, login, or API key is required.
 
 ## Features
-- Seven word categories; themed colors and clues.
-- 5/10 rounds, difficulty modes, custom words, 60-second rounds, random letter reveals and scoring.
-- PeerJS room-based two-phone play.
-- Synthesized game sound effects.
-- Radio dock: low-volume YouTube embedded radio streams/mix, play/mute toggle and random next station. Host selects and relays station/time state to the guest. Guests may need to tap Radio once to satisfy browser autoplay restrictions.
-- Word history: the host browser stores recent words in sessionStorage, up to 10 match sessions. It clears when the browser tab/session is closed, not on game exit.
+- Seven word categories, themed colors/clues, 5/10 rounds, difficulty and custom-word modes.
+- 60-second rounds, random letter reveals, scoring, streaks, and synthesized game sounds.
+- Two-player rooms via PeerJS. The host generates a fresh random room-sharing code for each room.
+- Radio button + next button: free random live internet-radio stations across lo-fi, rock and 2000s/pop tags.
+- Direct HTTPS MP3 audio streams from the Radio Browser directory; no YouTube player, account, API key, or separate music files.
+- Host selects the station and shared start timestamp; station, mute state and changes are relayed to the guest through the existing room connection.
+- Recent-word cache uses `sessionStorage` on the host browser and clears when the browser tab/session is closed.
 
-## Run
-Open index.html in a modern mobile browser. Internet is required for PeerJS and YouTube embeds.
+## Files
+- `hinthappen_index.html` is the canonical game source.
+- `index.html` is a tiny GitHub Pages entry redirect to the canonical file.
+- `.github/workflows/pages.yml` deploys the static site to GitHub Pages.
 
-## Deploy
-The GitHub Actions workflow in .github/workflows/pages.yml deploys the static site when index.html changes on main. Set repository Settings → Pages → Source to GitHub Actions if needed.
+## Radio provider
+Radio Browser is a free, community-maintained station directory with a public JSON API and no account/API key. The game queries the directory directly from the browser, filters for stations marked working, HTTPS and MP3, and selects a random station. The media itself plays from the station's own stream server; Radio Browser does not host the music.
 
-## Radio notes
-YouTube is embedded in its player (no separate music files are downloaded by this game). YouTube still loads its player/video and may show ads, apply restrictions, collect its normal usage data, and block playback depending on the device/browser. The selected live streams will align by live broadcast, but a YouTube auto-generated Mix can vary across accounts and may not be perfectly synchronized after its initial track.
+Live radio is continuous broadcast audio, not individual song files. The same station and scheduled start timestamp are shared across both phones. Startup/buffering differences between devices and networks mean playback alignment is best-effort, not sample-accurate. Station quality, availability, music selection, territory restrictions and broadcaster licensing are controlled by each station.
 
-## Testing
-JavaScript syntax checked with Node. Two-phone peer connection and radio playback/synchronization require live device testing.
+The app sends the directory only a genre/tag search. It does not send the room code, player names, guesses or scores to Radio Browser. The host sends the guest only the selected station's sanitized name, genre, HTTPS stream URL and shared radio state over the existing peer room connection.
+
+## Run and deploy
+Open `index.html` on the deployed site. To deploy, set repository Settings → Pages → Source to **GitHub Actions**. Pushing changes to `hinthappen_index.html` or `index.html` on `main` triggers the workflow.
+
+## Limitations
+- Radio Browser is provided without an uptime guarantee; the game tries its documented mirrors and can skip failed stations.
+- The browser may require a tap on each phone before it permits audio playback. The volume is capped at 16% in the UI.
+- This is a static client app. PeerJS signaling and each station's streaming service remain third-party network dependencies; no private server, root access, game API key or additional app secret is configured.
+- Real two-phone playback and device/network testing is still needed after deployment.
