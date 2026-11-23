@@ -4,7 +4,9 @@ on:
   push:
     branches: [main]
     paths:
+      - hinthappen_index.html
       - index.html
+      - .github/workflows/pages.yml
   workflow_dispatch:
 
 permissions:
@@ -25,8 +27,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check game file exists
-        run: test -f index.html
+      - name: Verify game entry and source files
+        run: test -f index.html && test -f hinthappen_index.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
