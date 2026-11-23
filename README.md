@@ -17,7 +17,7 @@ A mobile-first two-player browser word guessing game. No app installation, root 
 - `.github/workflows/pages.yml` deploys the static site to GitHub Pages.
 
 ## Radio provider
-Radio Browser is a free, community-maintained radio directory with a public JSON API and no sign-up or API key. The game queries genre tags, requests random ordering, and filters to stations marked working, HTTPS and MP3. Radio Browser is a station directory; it does not host the music. The audio comes directly from each station's stream server. The provider documents the API as free to use but without an uptime guarantee; the game tries multiple mirrors and skips stations whose stream fails. citeturn199524search1turn589618search2turn589618search3
+Radio Browser is a free, community-maintained radio directory with a public JSON API and no sign-up or API key. The game queries genre tags, requests random ordering, and filters to stations marked working, HTTPS and MP3. Radio Browser is a station directory; it does not host the music. The audio comes directly from each station's stream server. The provider documents the API as free to use but without an uptime guarantee; the game tries multiple mirrors and skips stations whose stream fails.
 
 Live radio is continuous broadcast audio, not a track-by-track catalog. Both phones receive the same station and a scheduled start time. Browser/network buffering means playback alignment is best-effort, not sample-accurate. Station music, availability, territory limits and licensing remain controlled by each station.
 
