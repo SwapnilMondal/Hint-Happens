@@ -62,7 +62,7 @@ begin
 end; $$;
 revoke all on function public.purge_moderation_expired() from public,anon,authenticated;
 grant execute on function public.purge_moderation_expired() to service_role;
-do $ begin
+do $$ begin
  if exists(select 1 from cron.job where jobname='hint-happens-moderation-cleanup') then
   perform cron.unschedule('hint-happens-moderation-cleanup');
  end if;
@@ -70,5 +70,5 @@ do $ begin
   perform cron.unschedule('hints-happen-moderation-cleanup');
  end if;
  perform cron.schedule('hints-happen-moderation-cleanup','15 * * * *','select public.purge_moderation_expired()');
-end $;
+end $$;
 -- After an admin signs in anonymously, add their UUID to moderation_admins via SQL Editor.
