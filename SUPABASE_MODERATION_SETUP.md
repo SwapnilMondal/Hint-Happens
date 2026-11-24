@@ -4,7 +4,7 @@ This adds **server-side chat moderation**. Messages are sent to a Supabase Edge 
 
 ## 1) Create a Supabase project
 - Create a Supabase project and copy Project URL and the public anon key.
-- In Authentication → Providers / Sign In, enable **Anonymous sign-ins** (anonymous users are used by the game and dashboard).
+- Players no longer authenticate. Anonymous sign-ins are still required only for the separate admin dashboard.
 - Enable Edge Functions.
 
 ## 2) Create tables and retention job
@@ -33,18 +33,6 @@ Edit `hinthappen_index.html` near the moderation constants and replace:
 
 The page has fail-closed chat behavior: if Supabase is not configured, moderation cannot authenticate, or the moderation function is unavailable, chat sending is disabled rather than falling back to unmoderated PeerJS chat. The rest of the game remains playable.
 
-## 5) Grant moderation dashboard admin
-1. Open `moderation.html` from the deployed site.
-2. Enter the project URL + anon key, click **Sign in**.
-3. In Supabase Dashboard → Authentication → Users, find the new anonymous user ID.
-4. In SQL Editor run (replace UUID):
-```sql
-insert into public.moderation_admins(user_id) values ('YOUR_AUTH_USER_UUID');
-```
-5. Return to the dashboard and click **Load data**.
-
-Admin access is checked on the server for every dashboard and filter-list write request. An anonymous account is not automatically an admin.
-
 ## Moderation data
 - **Chat filter:** server-side word/phrase matching; blocked submissions are not stored in the chat table and never forwarded to the other peer.
 - **Counters:** each blocked submission creates a moderation event with the matched terms and number of flagged occurrences; dashboard aggregates flagged occurrences and event totals per Supabase user ID (with display name) for the rolling retention period.
@@ -53,7 +41,7 @@ Admin access is checked on the server for every dashboard and filter-list write 
 - **Retention:** data is scheduled to expire after 10 days. Confirm the cron job runs; The hourly cleanup removes expired records within roughly one hour.
 
 ## Privacy / operational notes
-- Display names are user-entered and are not unique identities. Anonymous auth user IDs are the pseudonymous identifier.
+- Display names are user-entered and not verified identities; counters are grouped by display name.
 - IP addresses are personal data. The app tells players that name/IP moderation logs are retained for up to 10 days; consider adding a consent checkbox/notice before they enter a room and publish a short privacy notice.
 - Initial seeded terms are illustrative. Customize and test for your audience and local languages, slang, obfuscation, and false positives.
 - This implementation does not currently rate-limit messages or offer an appeals/moderation queue. Add rate limiting before wider public use.
