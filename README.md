@@ -13,12 +13,10 @@ A mobile-first two-player browser word game. Open the link on two phones; no app
 
 ## Rooms and joining
 - The host creates a fresh 10-character room ID with browser Web Crypto when available.
-- The game creates a shareable invite URL such as `/?room=ROOMCODE`. It opens the game with that room code prefilled, so the second player only needs to enter their name and tap Join.
-- PeerJS provides the two-phone connection. Anyone who receives an active invite URL can attempt to join, so share it only with the intended player.
+- The game creates a shareable invite URL. It opens the game with that room code prefilled, so the second player only needs to enter their name and tap join.
 
 ## Word decks
 - `word-decks.json` contains **1,000 distinct entries in each of seven categories (7,000 total)**: Animals, Countries & Regions, Food, Places, Movies, Music, and Sports.
-- The game loads this static JSON file from the same GitHub Pages site. Word selection does not require a word API, login, key, or a third-party data request during a match.
 - Difficulty changes clue style: Easy clues are more direct; Mixed clues balance hints with playful prompts; Hard clues use more oblique, puzzle-like hints.
 - A match draws 50 words from the selected categories. Recently used words are cached in the host's browser session to reduce repeats across matches in that same session.
 - Optional custom-word mode replaces the standard deck and requires at least 50 unique entries.
@@ -47,15 +45,12 @@ Source notes currently include:
 - `index.html` — GitHub Pages entry redirect; preserves the invite query string.
 - `word-decks.json` — static 7-category word library.
 
-## Run and deploy
-Open `index.html` on the published site. In repository Settings → Pages, use **GitHub Actions** as the deployment source. GitHub Pages runs its Pages-managed build and deployment when the repository content changes.
+
 
 ## Privacy and external services
 - No game account, private backend, database, radio API key, or root access is used.
 - Radio Browser receives genre/tag station-discovery requests, not room codes, player names, guesses, or scores.
-- PeerJS handles room signaling/data exchange between the two phones. The radio stream provider receives a normal audio-stream connection from each phone.
-- As with ordinary web services, these external services can receive network metadata such as IP address and browser headers.
 
 ## Answer celebrations and winner
 - When a guess is correct, the host sends one playful pop-culture/pun celebration with the answer in the `wordResult` message, so both players see the same celebration.
-- At match end, both screens show the winner banner: **“Are you taking the Hint?! You’re the winner, [Player name]!”**; ties get a separate playful tie message.
+- At match end, both screens show the winner banner: **“Are you taking the Hint?! You’re the winner, [Player name]!”**;
