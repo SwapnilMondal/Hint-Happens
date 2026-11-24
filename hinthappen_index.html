@@ -113,31 +113,25 @@ body{background:radial-gradient(ellipse at 12% 0%,#f9e4cf 0,transparent 38%),lin
 @media(max-width:360px){.wrap{padding-left:7px;padding-right:7px}.play-board{padding:9px}.cards-panel .hint{min-height:86px!important}.play-top-left{max-width:calc(100% - 105px)}.timer-card .timer{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.screen.active{animation:none!important}.btn,.btn2,.hint,.hint-card,.word-option{transition:none!important}}
 
-/* Full-screen storybook opening: the original GIF travels into its final card */
-.storybook-stage{position:relative;width:min(100%,439px);aspect-ratio:439/390;height:auto;margin:8px auto 16px;border-radius:22px;overflow:hidden;isolation:isolate;background:#f4e8dc;box-shadow:0 12px 28px #8b6b4d1c;transform-origin:top left;animation:none}
+/* Original GIF storybook opening */
+.storybook-stage{position:relative;width:min(100%,439px);aspect-ratio:439/390;height:auto;margin:8px auto 16px;border-radius:22px;overflow:hidden;isolation:isolate;background:#f4e8dc;box-shadow:0 12px 28px #8b6b4d1c;transform-origin:center top;animation:bookSettle 1.35s 3.2s cubic-bezier(.2,.75,.2,1) both}
 .storybook-stage:before{content:"";position:absolute;inset:8px;border:1px solid #fff9;border-radius:16px;z-index:3;pointer-events:none}
-.storybook-art{width:100%;height:100%;display:block;object-fit:contain;animation:pageIllustration 1s .05s cubic-bezier(.2,.75,.2,1) both}
+.storybook-art{width:100%;height:100%;display:block;object-fit:contain;animation:pageIllustration 1.2s .25s cubic-bezier(.2,.75,.2,1) both}
 .storybook-nose-drop{position:absolute;z-index:3;left:42.1%;top:36.8%;width:7px;height:10px;background:linear-gradient(145deg,#e9f2d9 0%,#a8c78f 85%);border:1px solid #f8f6e8;border-radius:65% 35% 65% 45%;transform:rotate(35deg);box-shadow:0 1px 3px #53694a55;animation:noseDropBob 2.1s ease-in-out infinite;pointer-events:none}
 .storybook-nose-drop:after{content:"";position:absolute;width:3px;height:4px;right:-4px;bottom:-4px;border-radius:60% 40% 60% 45%;background:#c5d9a9;border:1px solid #f8f6e8}
-.storybook-lines{position:absolute;inset:0;z-index:4;display:block;padding:0;pointer-events:none;text-align:center}
-.storybook-lines span{position:absolute;display:block;max-width:calc(100% - 24px);color:#76543f;background:#fffaf0e8;border:1px solid #fff9;border-radius:999px;padding:6px 13px;font-family:Georgia,serif;font-size:clamp(12px,3vw,16px);font-style:italic;letter-spacing:.01em;line-height:1.25;box-shadow:0 4px 12px #7d60401a;opacity:0;animation:captionFloat .8s ease-out forwards,captionHover 3.6s ease-in-out 1.7s infinite}
-.storybook-lines span:nth-child(1){top:9%;left:50%;transform:translateX(-50%) rotate(-1.5deg);animation-delay:.7s,1.7s}
-.storybook-lines span:nth-child(2){top:31%;right:6%;transform:rotate(1.4deg);animation-delay:1.35s,2.35s}
-.storybook-lines span:nth-child(3){bottom:11%;left:50%;transform:translateX(-50%) rotate(-1deg);animation-delay:2s,3s}
+.storybook-lines{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;padding:22px 14px;gap:7px;pointer-events:none;text-align:center}
+.storybook-lines span{display:block;color:#76543f;background:#fffaf0d9;border:1px solid #fff9;border-radius:999px;padding:6px 13px;font-family:Georgia,serif;font-size:clamp(12px,3vw,16px);font-style:italic;letter-spacing:.01em;box-shadow:0 4px 12px #7d60401a;opacity:0;animation:captionFloat .8s ease-out forwards}
+.storybook-lines span:nth-child(1){animation-delay:.85s}.storybook-lines span:nth-child(2){animation-delay:1.55s}.storybook-lines span:nth-child(3){animation-delay:2.25s}
+.storybook-lines span:nth-child(2),.storybook-lines span:nth-child(3){transform:translateY(7px)}
 .hero{animation:headingArrive .9s 3.45s cubic-bezier(.2,.75,.2,1) both}
-.storybook-intro-layer{position:fixed;inset:0;z-index:10000;overflow:hidden;pointer-events:none;background:radial-gradient(ellipse at 50% 44%,#fffaf3 0%,#f8efe5 68%,#f0e2d4 100%);animation:storybookBackdropIn .32s ease-out both}
-@keyframes pageIllustration{0%{transform:scale(1.045);filter:saturate(.82);opacity:.82}100%{transform:scale(1);filter:saturate(1);opacity:1}}
-@keyframes captionFloat{0%{opacity:0;translate:0 13px;rotate:-2deg}100%{opacity:1;translate:0 0;rotate:0}}
-@keyframes captionHover{0%,100%{translate:0 0}50%{translate:0 -4px}}
+@keyframes pageIllustration{0%{transform:scale(1.08);filter:saturate(.75);clip-path:inset(0 48% 0 48% round 12px)}100%{transform:scale(1);filter:saturate(1);clip-path:inset(0 0 0 0 round 12px)}}
+@keyframes bookSettle{0%{transform:scale(1.04);border-radius:8px}100%{transform:scale(1);border-radius:22px}}
+@keyframes captionFloat{0%{opacity:0;translate:0 12px;rotate:-2deg}100%{opacity:1;translate:0 0;rotate:0}}
 @keyframes headingArrive{0%{opacity:0;translate:0 14px}100%{opacity:1;translate:0 0}}
 @keyframes noseDropBob{0%,100%{transform:rotate(35deg) translateY(0)}50%{transform:rotate(35deg) translateY(2px)}}
-@keyframes storybookBackdropIn{from{opacity:0}to{opacity:1}}
-@keyframes storybookReveal{0%{opacity:0;transform:translateY(13px) scale(.985)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:420px){.storybook-stage{width:min(100%,320px);margin:6px auto 13px}.storybook-lines span{padding:5px 10px;font-size:12px}.storybook-nose-drop{width:6px;height:8px}}
-body.storybook-intro-done .storybook-stage{animation:none!important;transform:none!important}
-body.storybook-intro-done .storybook-art{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
-body.storybook-intro-done .storybook-lines span{animation:none!important;opacity:1!important;translate:0 0!important;rotate:0!important}
-@media(prefers-reduced-motion:reduce){.storybook-stage,.storybook-art,.storybook-lines span,.hero,.storybook-nose-drop,.storybook-intro-layer{animation:none!important;opacity:1!important;transform:none!important;translate:none!important;rotate:none!important;clip-path:none!important}}</style></head><body><main class="wrap">
+@media(max-width:420px){.storybook-stage{width:min(100%,390px);margin:6px auto 13px}.storybook-lines{padding:16px 9px;gap:5px}.storybook-lines span{padding:5px 10px;font-size:12px}.storybook-nose-drop{width:6px;height:8px}}
+@media(prefers-reduced-motion:reduce){.storybook-stage,.storybook-art,.storybook-lines span,.hero,.storybook-nose-drop{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}
+</style></head><body><main class="wrap">
 <header class="header"><div class="brand">💡 HINT HAPPENS!</div><div class="badge" id="status">LOADING WORDS</div></header>
 <section id="home" class="screen active"><div class="panel">
 <div class="eyebrow">The two-phone word battle</div><div class="storybook-stage" role="img" aria-label="The original animated watercolor garden scene: a smiling little boy shows a recovering little girl a butterfly">
@@ -585,93 +579,4 @@ async function fetchModeratedChat(messageId){
  const catnames=Object.keys(DB);selectedCats=[...catnames];$("categories").innerHTML=catnames.map(c=>'<button class="tile selected" data-cat="'+escapeHtml(c)+'">'+(categoryEmoji[c]||"🎲")+" "+escapeHtml(c)+'<small>('+DB[c].length+' words)</small></button>').join("");
  $("categories").querySelectorAll(".tile").forEach(b=>b.onclick=()=>{b.classList.toggle("selected");selectedCats=Array.from($("categories").querySelectorAll(".tile.selected")).map(x=>x.dataset.cat)});
  renderLobbyPlayers();renderScoreboards();
-})();</script><script>
-(() => {
-  const stage = document.querySelector(".storybook-stage");
-  if (!stage || !stage.animate || (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
-
-  const layer = document.createElement("div");
-  layer.className = "storybook-intro-layer";
-  layer.setAttribute("aria-hidden", "true");
-  document.body.appendChild(layer);
-
-  const run = () => {
-    if (!stage.isConnected || !stage.parentNode) { layer.remove(); return; }
-
-    const originalStyle = stage.getAttribute("style");
-    const parent = stage.parentNode;
-    const marker = document.createElement("div");
-    const stageRect = stage.getBoundingClientRect();
-    const computed = window.getComputedStyle(stage);
-    marker.setAttribute("aria-hidden", "true");
-    marker.style.display = "block";
-    marker.style.width = stageRect.width + "px";
-    marker.style.height = stageRect.height + "px";
-    marker.style.margin = computed.margin;
-    marker.style.flex = "0 0 auto";
-    parent.insertBefore(marker, stage);
-    const target = marker.getBoundingClientRect();
-
-    const vw = document.documentElement.clientWidth || window.innerWidth;
-    const vh = window.innerHeight;
-    const frameRatio = 439 / 390;
-    const startWidth = Math.max(220, Math.min(vw * .96, vh * frameRatio * .88, 660));
-    const startHeight = startWidth / frameRatio;
-    const startLeft = (vw - startWidth) / 2;
-    const startTop = (vh - startHeight) / 2;
-    const endScale = target.width / startWidth;
-
-    stage.style.position = "absolute";
-    stage.style.left = "0";
-    stage.style.top = "0";
-    stage.style.width = startWidth + "px";
-    stage.style.height = startHeight + "px";
-    stage.style.maxWidth = "none";
-    stage.style.margin = "0";
-    stage.style.aspectRatio = "439 / 390";
-    stage.style.transformOrigin = "top left";
-    stage.style.animation = "none";
-    stage.style.willChange = "transform,border-radius";
-    stage.style.boxShadow = "0 24px 70px #71563b35";
-    layer.appendChild(stage);
-
-    const finish = (animation) => {
-      if (animation) animation.cancel();
-      if (marker.parentNode) marker.parentNode.insertBefore(stage, marker);
-      else parent.appendChild(stage);
-      marker.remove();
-      if (originalStyle === null) stage.removeAttribute("style");
-      else stage.setAttribute("style", originalStyle);
-      layer.remove();
-      document.body.classList.add("storybook-intro-done");
-
-      const homePanel = document.querySelector("#home .panel");
-      const reveal = (element, delay) => {
-        if (element) element.style.animation = "storybookReveal 680ms cubic-bezier(.2,.75,.2,1) " + delay + "ms both";
-      };
-      reveal(document.querySelector(".header"), 0);
-      reveal(homePanel && homePanel.querySelector(".eyebrow"), 100);
-      reveal(homePanel && homePanel.querySelector(".hero"), 230);
-      reveal(homePanel && homePanel.querySelector(".label"), 370);
-      reveal(homePanel && homePanel.querySelector("#playerName"), 450);
-      reveal(homePanel && homePanel.querySelector(".muted"), 520);
-      reveal(homePanel && homePanel.querySelector("#nameError"), 560);
-      reveal(homePanel && homePanel.querySelector("#hostBtn"), 640);
-      reveal(homePanel && homePanel.querySelector("#joinBtn"), 750);
-      reveal(document.querySelector("#home .panel:nth-of-type(2)"), 900);
-    };
-
-    try {
-      const animation = stage.animate([
-        { transform: "translate3d(" + startLeft + "px," + startTop + "px,0) scale(1)", borderRadius: "18px" },
-        { transform: "translate3d(" + target.left + "px," + target.top + "px,0) scale(" + endScale + ")", borderRadius: "22px" }
-      ], { duration: 1520, delay: 2650, easing: "cubic-bezier(.2,.78,.2,1)", fill: "forwards" });
-      animation.finished.then(() => finish(animation)).catch(() => finish(animation));
-    } catch (error) {
-      finish(null);
-    }
-  };
-
-  window.setTimeout(run, 240);
-})();
-</script></body></html>
+})();</script></body></html>
