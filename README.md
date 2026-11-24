@@ -24,14 +24,13 @@ A quick two-player word-and-clue game. Open the game on two phones or computers,
 The word pools are compiled from public lists and datasets, then normalized and de-duplicated for gameplay. They are not intended as definitive reference lists. Source notes are included in the word-deck file.
 
 ## Radio
-- Radio Browser is used to discover live HTTPS stations tagged Lo-fi, Rock, or Pop/2000s.
+- Radio Browser is used to discover live HTTPS stations tagged Lo-fi, Slow and classical music.
 - Both players share the selected station and scheduled start through the room connection. Exact sync is best-effort due to buffering.
 - Audio playback may require a tap. The default volume is 16%.
 - Station content, availability, licensing, and territory restrictions are managed by the broadcaster.
 
 ## Chat moderation and privacy
 - Chat messages are checked server-side before delivery; flagged slurs, profanity, abusive phrases, and adult-content terms are blocked.
-- Blocked-message attempts are counted and logged by display name and IP address for up to 10 days.
 - The moderation backend is Supabase. See `SUPABASE_MODERATION_SETUP.md` for maintenance details.
 - Chat filtering is a blocklist-based filter, not a comprehensive semantic safety classifier.
 
