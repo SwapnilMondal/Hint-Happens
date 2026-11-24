@@ -292,8 +292,8 @@ async function loadWordDecks(){
 
 // Supabase moderation: configure the public project URL and anon key in this file.
 // Never put a service_role key in browser code.
-const SUPABASE_URL="https://YOUR_PROJECT.supabase.co";
-const SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL="https://cneayuvtydhsjjicqdrv.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_b2bTyVlfsrYDliOYrnk9G_1m_aZ0cQ";
 let moderationClient=null,moderationAuthReady=false,moderationLoading=null;
 function moderationConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL)&&SUPABASE_ANON_KEY!=="YOUR_SUPABASE_ANON_KEY"&&SUPABASE_ANON_KEY.length>20}
 async function getModerationClient(){
