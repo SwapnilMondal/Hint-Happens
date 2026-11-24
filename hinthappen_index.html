@@ -62,20 +62,29 @@
 <p class="muted">When custom words are used, they replace the regular deck and need at least 50 unique entries.</p>
 <button class="btn" id="start">START 5-ROUND MATCH</button></div>
 <div id="guestWait" class="hide"><div class="cluebox">You're in! Waiting for the host to start the match…</div></div></div></section>
+<section id="wordPick" class="screen"><div class="panel">
+<div class="hintrow"><span class="badge" id="pickRound">ROUND 1</span><span class="badge">WORD PICK</span></div>
+<div class="turn-kicker" id="pickKicker">CHOOSE A SECRET WORD</div><h2 class="turn-title" id="pickTitle">Pick one word</h2>
+<p class="muted" id="pickHelp">Only you see the word choices. Your opponent sees five card backs until you pick.</p>
+<div class="scoreboard" id="pickScoreboard"></div><div class="grid" id="wordOptions"></div>
+<button class="btn2" id="exitPick" style="width:100%;margin-top:10px">End session</button></div></section>
 <section id="hostTurn" class="screen"><div class="panel">
 <div class="hintrow"><span class="badge" id="roundbadge">ROUND 1</span><button class="soundbtn" id="soundtoggleHint">🔊 Sound on</button></div>
-<div class="turn-kicker" id="giverKicker">YOU ARE THE CLUE GIVER</div><h2 class="turn-title" id="giverTitle">Give a clue</h2>
-<p class="muted" id="giverHelp">Your secret word stays on this screen. Choose one clue and send it to the guesser.</p>
-<div class="scoreboard" id="giverScoreboard"></div><div class="secret"><div class="muted">SECRET WORD</div><div class="word" id="secret"></div><div class="muted" id="revealcount">Choose a clue to begin</div></div>
-<div class="label">Choose a clue to send</div><div class="cards" id="clues"></div><button class="btn" id="send" disabled>SEND CLUE →</button>
+<div class="turn-kicker" id="giverKicker">YOU ARE THE WORD GIVER</div><h2 class="turn-title" id="giverTitle">Reveal a hint</h2>
+<p class="muted" id="giverHelp">Tap a card to reveal its hint in real time to both phones.</p>
+<div class="scoreboard" id="giverScoreboard"></div><div class="secret"><div class="muted">SECRET WORD</div><div class="word" id="secret"></div><div class="muted" id="revealcount">Pick a word to begin</div></div>
+<div class="label">Hint cards · tap to flip</div><div class="cards" id="clues"></div>
+<div class="label">Live guess history (both players)</div><div class="cluebox" id="historyHost">No guesses yet</div>
 <button class="btn2" id="exitHost" style="width:100%;margin-top:10px">End session</button></div></section>
 <section id="guest" class="screen"><div class="panel">
 <div class="hintrow"><span class="badge" id="roundguest">ROUND 1</span><button class="soundbtn" id="soundtoggleGuess">🔊 Sound on</button></div>
 <div class="turn-kicker" id="guessKicker">YOUR TURN TO GUESS</div><h2 class="turn-title" id="guessTitle">What's the word?</h2>
 <div class="row" style="align-items:center"><div><div class="muted">TIME LEFT</div><div class="timer" id="clock">60</div></div><div style="text-align:right"><div class="muted">WORD</div><div class="word" id="wordProgress" style="font-size:22px">1 / 5</div></div></div>
-<div class="scoreboard" id="guessScoreboard"></div><div class="letterrow" id="letters"></div><div class="muted" style="text-align:center">YOUR HINT</div>
-<div class="cluebox" id="cluebox">Waiting for the clue giver…</div><input class="field" id="guess" placeholder="Type your guess" autocomplete="off" disabled>
+<div class="scoreboard" id="guessScoreboard"></div><div class="letterrow" id="letters"></div>
+<div class="label">Hint cards (flip live)</div><div class="cards" id="guestHintCards"></div><div class="cluebox" id="cluebox">Waiting for the word giver to flip a card…</div>
+<input class="field" id="guess" placeholder="Type your guess" autocomplete="off" disabled>
 <div class="row" style="margin-top:9px"><button class="btn" id="guessBtn" style="margin:0" disabled>GUESS ⚡</button><button class="btn2" id="missBtn" disabled>Wrong / pass</button></div>
+<div class="label">Your guesses · live on both phones</div><div class="cluebox" id="historyGuest">No guesses yet</div>
 <button class="btn2" id="exitGuest" style="width:100%;margin-top:10px">Leave game</button></div></section>
 <section id="passScreen" class="screen"><div class="panel pass-panel"><div class="pass-icon">🔄</div><div class="turn-kicker">PASS THE TURN</div>
 <h2 class="turn-title" id="passTitle">Now Player 2!</h2><p class="muted" id="passMessage">Switch roles and get ready for your five words.</p>
