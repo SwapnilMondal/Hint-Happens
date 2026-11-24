@@ -1,37 +1,58 @@
 # Hint Happens!
 
-A mobile-first two-player browser word guessing game. No app installation, root access, backend deployment, login, or game API key is required.
+A mobile-first two-player browser word game. Open the link on two phones; no app installation is required.
 
-## Features
-- Seven word categories, themed colors/clues, 5/10 rounds, difficulty and custom-word modes.
-- 60-second rounds, random letter reveals, scoring, streaks, and synthesized game sounds.
-- Two-player rooms via PeerJS. The host generates a fresh 10-character random room-sharing code for each room.
-- Radio button + next button: free random live internet-radio stations across lo-fi, rock and pop/2000s tags.
-- Direct HTTPS MP3 audio streams from Radio Browser directory; no YouTube player, account, radio API key, or separate music files.
-- The host selects a station and future start timestamp; station, mute state and changes are relayed to the guest through the existing room connection.
-- Recent-word cache uses `sessionStorage` in the host tab and is cleared when that tab/session is closed.
+## Match rules
+- **5 rounds per match.**
+- In each round, Player 1 guesses **5 words** while Player 2 gives clues.
+- Then the game displays **“Now [Player 2]!”** and the roles switch: Player 2 guesses 5 words while Player 1 gives clues.
+- That is **10 words per round and 50 words per full match**.
+- The player who solves more of their five words wins that round. Most round wins after five rounds wins the match; a tied round awards neither player a round win.
+- Each word has a 60-second timer. Wrong guesses reveal random letters; revealing 60% or more ends that word.
+- Players enter their own names, and the names appear in turn prompts and the scoreboards.
+
+## Rooms and joining
+- The host creates a fresh 10-character room ID with browser Web Crypto when available.
+- The game creates a shareable invite URL such as `/?room=ROOMCODE`. It opens the game with that room code prefilled, so the second player only needs to enter their name and tap Join.
+- PeerJS provides the two-phone connection. Anyone who receives an active invite URL can attempt to join, so share it only with the intended player.
+
+## Word decks
+- `word-decks.json` contains **1,000 distinct entries in each of seven categories (7,000 total)**: Animals, Countries & Regions, Food, Places, Movies, Music, and Sports.
+- The game loads this static JSON file from the same GitHub Pages site. Word selection does not require a word API, login, key, or a third-party data request during a match.
+- Difficulty changes clue style: Easy clues are more direct; Mixed clues balance hints with playful prompts; Hard clues use more oblique, puzzle-like hints.
+- A match draws 50 words from the selected categories. Recently used words are cached in the host's browser session to reduce repeats across matches in that same session.
+- Optional custom-word mode replaces the standard deck and requires at least 50 unique entries.
+
+### Data-source notes
+The repository's `word-decks.json` includes the category-level source notes. The word pools are compiled from public word lists and datasets, combined with the original game's vocabulary and additional curated terms. They are normalized and de-duplicated for gameplay. Some lists include broad taxonomic names, administrative regions, culinary terms, musical styles, and sports vocabulary to build variety. They are not a definitive taxonomy or official reference list.
+
+Source notes currently include:
+- Animal names: `jneidel/animal-names` plus the original game list.
+- Countries and regions: `country-regions/country-region-data` and `dr5hn/countries-states-cities-database`.
+- Places: `russ666/all-countries-and-cities-json` plus original landmarks.
+- Food: USDA-derived CalorTracker food names (CC0), Food-101 names, other food lists, and curated additions.
+- Movies: MovieLens 1M titles plus original game titles.
+- Music: `voltraco/genres` plus original game music terms.
+- Sports: `clem9669/wordlists`, original game terms, and curated additions.
+
+## Radio
+- The radio controls use the free Radio Browser station directory to find HTTPS MP3 streams tagged Lo-fi, Rock, or Pop/2000s.
+- The same 📻 icon is always shown; mute state is represented with a diagonal cross over the icon.
+- Station and playback state are relayed through the existing room connection. Both phones receive the selected station and a scheduled start time; network buffering makes exact synchronization best-effort.
+- The radio is a live broadcast, not a song catalog. Each station controls its own content, availability, licensing, and territory restrictions.
+- Browser audio may require a user tap before playback. The app sets radio volume to 16%.
 
 ## Files
-- `hinthappen_index.html` is the canonical game source.
-- `index.html` is a tiny GitHub Pages entry redirect to the canonical file.
-- `.github/workflows/pages.yml` deploys the static site to GitHub Pages.
-
-## Radio provider
-Radio Browser is a free, community-maintained radio directory with a public JSON API and no sign-up or API key. The game queries genre tags, requests random ordering, and filters to stations marked working, HTTPS and MP3. Radio Browser is a station directory; it does not host the music. The audio comes directly from each station's stream server. The provider documents the API as free to use but without an uptime guarantee; the game tries multiple mirrors and skips stations whose stream fails.
-
-Live radio is continuous broadcast audio, not a track-by-track catalog. Both phones receive the same station and a scheduled start time. Browser/network buffering means playback alignment is best-effort, not sample-accurate. Station music, availability, territory limits and licensing remain controlled by each station.
-
-## Data and security
-- No root access, private backend, database credentials, radio API key, or account is used.
-- The radio directory receives only genre/tag discovery requests from the app, not room codes, player names, guesses or scores.
-- As with any public web request, the directory and selected stream provider can see ordinary connection metadata such as the device's IP address and browser/network headers. The station stream provider receives each phone's stream connection.
-- The selected station details and radio controls are sent to the other player over the existing PeerJS room connection. The app does not send game content to the radio directory.
-- The room code is generated in the browser using Web Crypto when available. Anyone who obtains the active room code may attempt to join the room, so share it only with the intended player.
+- `hinthappen_index.html` — canonical game.
+- `index.html` — GitHub Pages entry redirect; preserves the invite query string.
+- `word-decks.json` — static 7-category word library.
+- `.github/workflows/pages.yml` — GitHub Pages deployment workflow.
 
 ## Run and deploy
-Open `index.html` on the deployed site. In repository Settings → Pages, set the source to **GitHub Actions**. Pushing changes to `hinthappen_index.html` or `index.html` on `main` triggers deployment.
+Open `index.html` on the published site. In repository Settings → Pages, use **GitHub Actions** as the deployment source. Pushing changes to `main` triggers deployment.
 
-## Limitations
-- A browser may require one tap on each phone before it permits audio playback. The UI sets radio volume to 16%.
-- Live stream formats and availability vary. The build currently filters for HTTPS MP3 streams; some stations may not be available from every country or network.
-- PeerJS signaling and each station's streaming service remain third-party network dependencies. Real two-phone playback testing is still needed after deployment.
+## Privacy and external services
+- No game account, private backend, database, radio API key, or root access is used.
+- Radio Browser receives genre/tag station-discovery requests, not room codes, player names, guesses, or scores.
+- PeerJS handles room signaling/data exchange between the two phones. The radio stream provider receives a normal audio-stream connection from each phone.
+- As with ordinary web services, these external services can receive network metadata such as IP address and browser headers.
