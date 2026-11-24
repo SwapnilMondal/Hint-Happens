@@ -81,7 +81,7 @@
 <div class="eyebrow">The two-phone word battle</div><div class="hero">One clue.<br>Five words.<br>Switch it up.</div>
 <p class="muted">Take turns giving clues and guessing. Five rounds decide who really knows their words.</p>
 <div class="label">What should we call you?</div><input id="playerName" class="field" maxlength="18" placeholder="Enter your name" autocomplete="nickname">
-<p id="nameError" class="muted" style="color:var(--bad);min-height:18px;margin:6px 0 0"></p>
+<div class="muted" style="font-size:12px;margin-top:10px"><label style="display:flex;gap:8px;align-items:flex-start"><input id="moderationConsent" type="checkbox" style="margin-top:3px;flex:0 0 auto"><span>I understand that chat moderation logs my display name and IP for up to 10 days, and counts blocked terms.</span></label></div><p id="nameError" class="muted" style="color:var(--bad);min-height:18px;margin:6px 0 0"></p>
 <button class="btn" id="hostBtn">🎮 Create a room</button><button class="btn2" id="joinBtn" style="width:100%;margin-top:10px">🔗 Join a room</button>
 </div><div class="panel"><div class="eyebrow">How the match works</div><div class="muted">5 rounds · 5 words per player each round · 60 seconds per word. One player guesses while the other gives clues, then you swap. Most round wins takes the match.</div></div></section>
 <section id="hostSetup" class="screen"><div class="panel"><div class="eyebrow">Room created</div><h2 class="turn-title">Invite your opponent</h2>
@@ -259,7 +259,7 @@ async function loadWordDecks(){
  function normalize(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
  function safeName(v){return String(v||"").replace(/[<>]/g,"").replace(/\s+/g," ").trim().slice(0,18)||"Player"}
- function readName(){const entered=$("playerName").value.trim();if(!entered){$("nameError").textContent="Please enter your name first.";return false}playerName=safeName(entered);$("playerName").value=playerName;sessionStorage.setItem("hh-player-name",playerName);$("nameError").textContent="";return true}
+ function readName(){const entered=$("playerName").value.trim();if(!entered){$("nameError").textContent="Please enter your name first.";return false}if(!$("moderationConsent").checked){$("nameError").textContent="Please acknowledge the 10-day name/IP moderation log notice.";return false}playerName=safeName(entered);$("playerName").value=playerName;sessionStorage.setItem("hh-player-name",playerName);$("nameError").textContent="";return true}
  function setNames(list){if(Array.isArray(list)&&list.length===2)names=[safeName(list[0]),safeName(list[1])];renderLobbyPlayers();renderScoreboards()}
  function colorCat(c){const p=PALETTE[c]||["#141526","#ffc568","#fff0cc"];document.documentElement.style.setProperty("--bg",p[0]);document.documentElement.style.setProperty("--panel",p[0]);document.documentElement.style.setProperty("--panel2",p[0]+"cc");document.documentElement.style.setProperty("--accent",p[1]);document.documentElement.style.setProperty("--accent2",p[2]);document.documentElement.style.setProperty("--line",p[1]+"55");document.querySelector('meta[name=theme-color]').content=p[0]}
  let soundContext=null;
