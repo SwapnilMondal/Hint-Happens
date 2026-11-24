@@ -46,10 +46,9 @@ Source notes currently include:
 - `hinthappen_index.html` — canonical game.
 - `index.html` — GitHub Pages entry redirect; preserves the invite query string.
 - `word-decks.json` — static 7-category word library.
-- `.github/workflows/pages.yml` — GitHub Pages deployment workflow.
 
 ## Run and deploy
-Open `index.html` on the published site. In repository Settings → Pages, use **GitHub Actions** as the deployment source. Pushing changes to `main` triggers deployment.
+Open `index.html` on the published site. In repository Settings → Pages, use **GitHub Actions** as the deployment source. GitHub Pages runs its Pages-managed build and deployment when the repository content changes.
 
 ## Privacy and external services
 - No game account, private backend, database, radio API key, or root access is used.
