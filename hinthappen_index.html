@@ -81,7 +81,7 @@
 <div class="eyebrow">The two-phone word battle</div><div class="hero">One clue.<br>Five words.<br>Switch it up.</div>
 <p class="muted">Take turns giving clues and guessing. Five rounds decide who really knows their words.</p>
 <div class="label">What should we call you?</div><input id="playerName" class="field" maxlength="18" placeholder="Enter your name" autocomplete="nickname">
-<div class="muted" style="font-size:12px;margin-top:10px"><label style="display:flex;gap:8px;align-items:flex-start"><input id="moderationConsent" type="checkbox" style="margin-top:3px;flex:0 0 auto"><span>I understand that chat moderation logs my display name and IP for up to 10 days, and counts blocked terms.</span></label></div><p id="nameError" class="muted" style="color:var(--bad);min-height:18px;margin:6px 0 0"></p>
+<div class="muted" style="font-size:12px;margin-top:10px">Chat is filtered for slurs, profanity, abusive phrases, and adult-content terms. Blocked attempts are logged by display name and IP for 10 days.</div><p id="nameError" class="muted" style="color:var(--bad);min-height:18px;margin:6px 0 0"></p>
 <button class="btn" id="hostBtn">🎮 Create a room</button><button class="btn2" id="joinBtn" style="width:100%;margin-top:10px">🔗 Join a room</button>
 </div><div class="panel"><div class="eyebrow">How the match works</div><div class="muted">5 rounds · 5 words per player each round · 60 seconds per word. One player guesses while the other gives clues, then you swap. Most round wins takes the match.</div></div></section>
 <section id="hostSetup" class="screen"><div class="panel"><div class="eyebrow">Room created</div><h2 class="turn-title">Invite your opponent</h2>
@@ -259,7 +259,7 @@ async function loadWordDecks(){
  function normalize(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
  function safeName(v){return String(v||"").replace(/[<>]/g,"").replace(/\s+/g," ").trim().slice(0,18)||"Player"}
- function readName(){const entered=$("playerName").value.trim();if(!entered){$("nameError").textContent="Please enter your name first.";return false}if(!$("moderationConsent").checked){$("nameError").textContent="Please acknowledge the 10-day name/IP moderation log notice.";return false}playerName=safeName(entered);$("playerName").value=playerName;sessionStorage.setItem("hh-player-name",playerName);$("nameError").textContent="";return true}
+ function readName(){const entered=$("playerName").value.trim();if(!entered){$("nameError").textContent="Please enter your name first.";return false}playerName=safeName(entered);$("playerName").value=playerName;sessionStorage.setItem("hh-player-name",playerName);$("nameError").textContent="";return true}
  function setNames(list){if(Array.isArray(list)&&list.length===2)names=[safeName(list[0]),safeName(list[1])];renderLobbyPlayers();renderScoreboards()}
  function colorCat(c){const p=PALETTE[c]||["#141526","#ffc568","#fff0cc"];document.documentElement.style.setProperty("--bg",p[0]);document.documentElement.style.setProperty("--panel",p[0]);document.documentElement.style.setProperty("--panel2",p[0]+"cc");document.documentElement.style.setProperty("--accent",p[1]);document.documentElement.style.setProperty("--accent2",p[2]);document.documentElement.style.setProperty("--line",p[1]+"55");document.querySelector('meta[name=theme-color]').content=p[0]}
  let soundContext=null;
@@ -290,36 +290,25 @@ async function loadWordDecks(){
  function makeRoomId(){const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",bytes=new Uint8Array(10);if(window.crypto?.getRandomValues)window.crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.random()*256|0;return Array.from(bytes,b=>alphabet[b%alphabet.length]).join("")}
  function send(d){if(conn&&conn.open){try{conn.send(d);return true}catch(e){setStatus("SEND ERROR");return false}}return false} function appendChat(m){if(!m||!m.id)return;const i=chatMessages.findIndex(x=>x.id===m.id);if(i>=0){chatMessages[i]={...chatMessages[i],...m};renderGuessHistory();return}chatMessages.push(m);chatMessages=chatMessages.slice(-100);renderGuessHistory()}
 
-// Supabase moderation: configure the public project URL and anon key in this file.
-// Never put a service_role key in browser code.
+// Player chat moderation is public and does not require player authentication.
 const SUPABASE_URL="https://cneayuvtydhsjjicqdrv.supabase.co";
 const SUPABASE_ANON_KEY="sb_publishable_b2bTyVlfsrYDliOYrnk9G_1m_aZ0cQ";
 let moderationClient=null,moderationAuthReady=false,moderationLoading=null;
 function moderationConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL)&&SUPABASE_ANON_KEY!=="YOUR_SUPABASE_ANON_KEY"&&SUPABASE_ANON_KEY.length>20}
 async function getModerationClient(){
- if(!moderationConfigured())throw new Error("Chat moderation is not configured yet.");
+ if(!moderationConfigured())throw new Error("Chat moderation is not configured.");
  if(moderationClient)return moderationClient;
- if(!moderationLoading)moderationLoading=import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then(({createClient})=>moderationClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}));
+ if(!moderationLoading)moderationLoading=import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then(({createClient})=>moderationClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}));
  return moderationLoading;
 }
 async function initModerationIdentity(displayName){
- try{
-  const client=await getModerationClient();
-  let {data:{session}}=await client.auth.getSession();
-  if(!session){const result=await client.auth.signInAnonymously();if(result.error)throw result.error;session=result.data.session}
-  const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"login",displayName:displayName}});
-  if(error)throw error;
-  moderationAuthReady=true;
-  $("moderationNotice").textContent="Chat is moderated. Your display name and IP address are stored securely for up to 10 days; flagged-word counts are retained for the same period.";
-  return true;
- }catch(e){
-  moderationAuthReady=false;
-  const n=$("moderationNotice");if(n)n.textContent="Chat is unavailable until moderation is connected. The game can still be played.";
-  console.warn("Moderation setup unavailable",e);return false;
- }
+ moderationAuthReady=moderationConfigured();
+ const n=$("moderationNotice");
+ if(n)n.textContent="Chat filter active: slurs, profanity, abusive phrases and adult-content terms are blocked. Name/IP moderation logs expire after 10 days.";
+ return moderationAuthReady;
 }
 async function submitModeratedChat(textValue){
- if(!moderationAuthReady)throw new Error("Moderated chat is not connected.");
+ if(!moderationAuthReady)throw new Error("Chat moderation is not configured.");
  const client=await getModerationClient();
  const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"submit",displayName:names[myIndex()]||playerName,roomCode:room,message:textValue}});
  if(error)throw error;
@@ -328,7 +317,7 @@ async function submitModeratedChat(textValue){
 }
 async function fetchModeratedChat(messageId){
  try{
-  if(!moderationAuthReady)return;
+  if(!moderationConfigured())return;
   const client=await getModerationClient();
   const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"fetch",messageId:messageId,roomCode:room}});
   if(error||!data?.ok||!data.message)return;
@@ -339,7 +328,7 @@ async function fetchModeratedChat(messageId){
  async function sendChat(){
   const input=$("guess"),v=String(input.value||"").trim().slice(0,240);if(!v)return;
   if(!conn?.open){$("composerMeta").textContent="Chat unavailable — room connection is offline.";return}
-  if(!moderationAuthReady){$("composerMeta").textContent="Chat blocked: connect to the moderation service first.";return}
+  if(!moderationAuthReady){$("composerMeta").textContent="Chat filter unavailable: moderation service is not configured.";return}
   $("chatBtn").disabled=true;
   try{
    const approved=await submitModeratedChat(v);
@@ -356,9 +345,9 @@ async function fetchModeratedChat(messageId){
  function initHostPeer(id){return new Promise((resolve,reject)=>{peer=new Peer(id,{debug:0});peer.on("open",resolve);peer.on("error",reject);peer.on("connection",incoming=>{if(role!=="host"||conn){incoming.close();return}conn=incoming;bindConn();const opened=()=>setStatus("PLAYER CONNECTED");if(conn.open)opened();else conn.on("open",opened)})})}
  function initGuestPeer(){return new Promise((resolve,reject)=>{peer=new Peer({debug:0});peer.on("open",resolve);peer.on("error",reject)})}
  function updateInviteUrl(){const u=new URL("./",location.href);u.search="";u.hash="";u.searchParams.set("room",room);$("inviteLink").value=u.href}
- async function createRoom(){if(!playerName&&!readName())return;await initModerationIdentity(playerName);role="host";radioRole="host";names[0]=playerName;room=makeRoomId();$("makeRoom").disabled=true;setStatus("CREATING ROOM");try{await initHostPeer("hh-room-"+room.toLowerCase());$("roomCode").textContent=room;updateInviteUrl();$("wait").textContent="Room is open. Share the invite link and wait for Player 2…";setStatus("ROOM OPEN");$("makeRoom").classList.add("hide");show("hostSetup")}catch(e){setStatus("ROOM ERROR");$("wait").textContent="Could not create the room. Please try again.";$("makeRoom").disabled=false;alert("Could not create room. Check your connection and try again.")}}
+ async function createRoom(){if(!playerName&&!readName())return;role="host";radioRole="host";names[0]=playerName;room=makeRoomId();$("makeRoom").disabled=true;setStatus("CREATING ROOM");try{await initHostPeer("hh-room-"+room.toLowerCase());$("roomCode").textContent=room;updateInviteUrl();$("wait").textContent="Room is open. Share the invite link and wait for Player 2…";setStatus("ROOM OPEN");$("makeRoom").classList.add("hide");show("hostSetup")}catch(e){setStatus("ROOM ERROR");$("wait").textContent="Could not create the room. Please try again.";$("makeRoom").disabled=false;alert("Could not create room. Check your connection and try again.")}}
  function parseRoom(raw){let value=String(raw||"").trim();try{const u=new URL(value,location.href);value=u.searchParams.get("room")||u.hash.replace("#room=","")||value}catch(e){}value=value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,"");return value.length===10?value:""}
- async function joinRoom(){if(!readName())return;await initModerationIdentity(playerName);const code=parseRoom($("roomInput").value);if(!code){$("joinmsg").textContent="Enter a valid 10-character room code or invite link.";return}room=code;role="guest";radioRole="guest";$("connect").disabled=true;$("joinmsg").textContent="Connecting to "+code+"…";setStatus("CONNECTING");try{await initGuestPeer();conn=peer.connect("hh-room-"+room.toLowerCase(),{reliable:true});const opened=()=>{bindConn();send({type:"join",name:playerName});$("joinmsg").textContent="Connected. Waiting for the host…";setStatus("CONNECTED");show("lobby");$("hostConfig").classList.add("hide");$("guestWait").classList.remove("hide")};if(conn.open)opened();else conn.on("open",opened);conn.on("error",()=>{$("joinmsg").textContent="Could not connect. Check the invite link and try again.";$("connect").disabled=false})}catch(e){$("joinmsg").textContent="Could not connect. Check your connection and invite link.";setStatus("CONNECTION ERROR");$("connect").disabled=false}}
+ async function joinRoom(){if(!readName())return;const code=parseRoom($("roomInput").value);if(!code){$("joinmsg").textContent="Enter a valid 10-character room code or invite link.";return}room=code;role="guest";radioRole="guest";$("connect").disabled=true;$("joinmsg").textContent="Connecting to "+code+"…";setStatus("CONNECTING");try{await initGuestPeer();conn=peer.connect("hh-room-"+room.toLowerCase(),{reliable:true});const opened=()=>{bindConn();send({type:"join",name:playerName});$("joinmsg").textContent="Connected. Waiting for the host…";setStatus("CONNECTED");show("lobby");$("hostConfig").classList.add("hide");$("guestWait").classList.remove("hide")};if(conn.open)opened();else conn.on("open",opened);conn.on("error",()=>{$("joinmsg").textContent="Could not connect. Check the invite link and try again.";$("connect").disabled=false})}catch(e){$("joinmsg").textContent="Could not connect. Check your connection and invite link.";setStatus("CONNECTION ERROR");$("connect").disabled=false}}
  function renderLobbyPlayers(){$("lobbyPlayers").innerHTML=names.map((n,i)=>'<span class="playerchip">'+(i===0?"🟡 ":"🟣 ")+escapeHtml(n)+(i===0?" · HOST":"")+"</span>").join("")}
  function scoreboardHtml(active){return names.map((n,i)=>'<div class="player-score '+(active===i?"active-player":"")+'"><strong>'+escapeHtml(names[i])+'</strong><span><b>'+roundWins[i]+'</b> round wins · <b>'+solvedTotals[i]+'</b>/25 words solved</span></div>').join("")}
  function renderScoreboards(active){const html=scoreboardHtml(active);["giverScoreboard","guessScoreboard","passScoreboard","resultBoard","scoreboardBackdrop"].forEach(id=>{if($(id))$(id).innerHTML=html})}
