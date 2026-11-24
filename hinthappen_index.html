@@ -436,7 +436,7 @@ async function loadWordDecks(){
    else{$("secret").textContent=word||"YOUR WORD";renderHintScreen()}
    show("playScreen");return
   }
-  if(d.type==="wordSecret"){word=d.word;hintSet=d.clues||[];category=d.category||category;if(myIndex()===turnGiver)renderHintScreen();return}
+  if(d.type==="wordSecret"){word=d.word;hintSet=d.clues||[];category=d.category||category;colorCat(category);if(myIndex()===turnGiver)renderHintScreen();return}
   if(d.type==="cardReveal"){revealedHints=d.revealed||revealedHints;renderCardReveal(d);return}
   if(d.type==="guessHistory"){guessHistory=d.history||[];renderGuessHistory();return}
   if(d.type==="tick"){$("clock").textContent=d.secs;$("clock").classList.toggle("low",d.secs<=15);return}
