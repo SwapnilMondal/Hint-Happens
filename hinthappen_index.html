@@ -289,7 +289,7 @@ async function loadWordDecks(){
   $("pickHelp").textContent="Only "+names[turnGiver]+" sees the words. The other player sees the backs of five cards.";
   renderWordChoices();
   const d={type:"wordStart",round:roundNo,guesserIndex:turnGuesser,giverIndex:turnGiver,wordInTurn:wordInTurn,totalWords:WORDS_PER_TURN,cat:category,choiceCount:5};
-  send(d);send({type:"wordChoices",choices:choices.map(x=>x.word),cat:category});
+  send(d);if(turnGiver===1)send({type:"wordChoices",choices:choices.map(x=>x.word),cat:category});
   if(myIndex()===turnGiver)show("wordPick");else{renderBackCards("guestHintCards",5);renderScoreboards(turnGuesser);show("guest")}
  }
  function renderWordChoices(){
@@ -310,7 +310,7 @@ async function loadWordDecks(){
   $("guess").value="";$("guess").disabled=true;$("guessBtn").disabled=true;$("missBtn").disabled=true;
   renderHostClues();renderBackCards("guestHintCards",hintSet.length);
   const data={type:"wordChosen",round:roundNo,guesserIndex:turnGuesser,giverIndex:turnGiver,wordInTurn:wordInTurn,cat:category,length:normalize(word).length,cardCount:hintSet.length};
-  send(data);send({type:"wordSecret",word:word,clues:hintSet,category:category,wordInTurn:wordInTurn});
+  send(data);if(turnGiver===1)send({type:"wordSecret",word:word,clues:hintSet,category:category,wordInTurn:wordInTurn});
   renderLocalRole()
  }
  function renderLocalRole(){if(myIndex()===turnGiver)renderHintScreen();else renderGuessScreen()}
