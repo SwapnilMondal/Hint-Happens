@@ -12,12 +12,12 @@ create table if not exists public.moderation_events (
  display_name text not null, room_code text,
  event_type text not null check(event_type in ('blocked','allowed')),
  flagged_terms text[] not null default '{}', flagged_word_count integer not null default 0,
- message_excerpt text, created_at timestamptz not null default now(),
+ message_excerpt text, ip_address inet, created_at timestamptz not null default now(),
  expires_at timestamptz not null default (now()+interval '10 days')
 );
 create table if not exists public.moderated_chat (
  id uuid primary key, room_code text not null,
- user_id uuid not null references auth.users(id) on delete cascade,
+ user_id uuid references auth.users(id) on delete cascade,
  display_name text not null, message text not null check(length(message) between 1 and 240),
  created_at timestamptz not null default now(), expires_at timestamptz not null default (now()+interval '10 days')
 );
