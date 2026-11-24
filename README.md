@@ -1,4 +1,4 @@
-# Hint Happens!
+# Hints Happen
 
 A quick two-player word-and-clue game. Open the game on two phones or computers, create a room, and invite your opponent. No player account or sign-in is needed.
 
