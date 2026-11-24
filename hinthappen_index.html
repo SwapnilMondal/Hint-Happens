@@ -116,7 +116,7 @@
    <aside class="history-panel"><div class="history-heading"><span>💬 CHAT & GUESSES</span><small id="chatConnection">ROOM CHAT</small></div><div id="guessFeed" class="guess-feed"><div class="history-empty">Messages appear here…</div></div></aside>
    <section class="cards-panel"><div class="cards-heading"><span id="cardsHeading">HINT CARDS</span><small id="cardsSubheading">Tap a card to reveal</small></div><div class="cards" id="liveCards"></div><div class="word-feedback" id="wordFeedback">Waiting for the word chooser…</div></section>
   </div>
-  <div class="composer-wrap"><div class="composer-meta" id="composerMeta">Chat anytime · 🎯 Guess only when it is your turn</div><div class="emoji-row" id="chatEmojis"><button type="button" class="emoji-chip">😂</button><button type="button" class="emoji-chip">🤔</button><button type="button" class="emoji-chip">🔥</button><button type="button" class="emoji-chip">👏</button><button type="button" class="emoji-chip">❤️</button><button type="button" class="emoji-chip">😎</button></div><div class="guess-composer"><input class="field" id="guess" placeholder="Chat or type a word…" autocomplete="off"><button class="chat-send" id="chatBtn" aria-label="Send chat">💬</button><button class="guess-send" id="guessBtn" disabled aria-label="Submit guess">🎯</button></div></div>
+  <div class="composer-wrap"><div class="muted" id="moderationNotice" style="margin-bottom:8px">Chat messages are filtered for profanity, abusive phrases and adult content. Display name and IP are retained for up to 10 days for moderation.</div><div class="composer-meta" id="composerMeta">Chat anytime · 🎯 Guess only when it is your turn</div><div class="emoji-row" id="chatEmojis"><button type="button" class="emoji-chip">😂</button><button type="button" class="emoji-chip">🤔</button><button type="button" class="emoji-chip">🔥</button><button type="button" class="emoji-chip">👏</button><button type="button" class="emoji-chip">❤️</button><button type="button" class="emoji-chip">😎</button></div><div class="guess-composer"><input class="field" id="guess" placeholder="Chat or type a word…" autocomplete="off"><button class="chat-send" id="chatBtn" aria-label="Send chat">💬</button><button class="guess-send" id="guessBtn" disabled aria-label="Submit guess">🎯</button></div></div>
   <div class="play-bottom"><span class="muted" id="statusHint">Both phones update together</span><button class="btn2" id="exitHost">End session</button><button class="btn2" id="exitGuest" style="display:none">Leave game</button><button class="btn2" id="exitPick" style="display:none">End session</button></div>
   <button class="btn2" id="missBtn" disabled style="display:none">Wrong / pass</button><button id="send" style="display:none" disabled></button>
   <span id="historyHost" style="display:none"></span><span id="historyGuest" style="display:none"></span>
@@ -289,7 +289,66 @@ async function loadWordDecks(){
  }
  function makeRoomId(){const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",bytes=new Uint8Array(10);if(window.crypto?.getRandomValues)window.crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.random()*256|0;return Array.from(bytes,b=>alphabet[b%alphabet.length]).join("")}
  function send(d){if(conn&&conn.open){try{conn.send(d);return true}catch(e){setStatus("SEND ERROR");return false}}return false} function appendChat(m){if(!m||!m.id)return;const i=chatMessages.findIndex(x=>x.id===m.id);if(i>=0){chatMessages[i]={...chatMessages[i],...m};renderGuessHistory();return}chatMessages.push(m);chatMessages=chatMessages.slice(-100);renderGuessHistory()}
- function sendChat(){const input=$("guess"),v=String(input.value||"").trim().slice(0,240);if(!v)return;if(!conn?.open){$("composerMeta").textContent="Chat unavailable — room connection is offline.";return}const m={id:Date.now()+"-"+Math.random().toString(36).slice(2,8),sender:names[myIndex()]||playerName||"Player",text:v,time:Date.now()};appendChat(m);input.value="";if(!send({type:"chat",message:m})){$("composerMeta").textContent="Send failed; try again";chatMessages=chatMessages.filter(x=>x.id!==m.id);renderGuessHistory()}}
+
+// Supabase moderation: configure the public project URL and anon key in this file.
+// Never put a service_role key in browser code.
+const SUPABASE_URL="https://YOUR_PROJECT.supabase.co";
+const SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY";
+let moderationClient=null,moderationAuthReady=false,moderationLoading=null;
+function moderationConfigured(){return /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL)&&SUPABASE_ANON_KEY!=="YOUR_SUPABASE_ANON_KEY"&&SUPABASE_ANON_KEY.length>20}
+async function getModerationClient(){
+ if(!moderationConfigured())throw new Error("Chat moderation is not configured yet.");
+ if(moderationClient)return moderationClient;
+ if(!moderationLoading)moderationLoading=import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then(({createClient})=>moderationClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}));
+ return moderationLoading;
+}
+async function initModerationIdentity(displayName){
+ try{
+  const client=await getModerationClient();
+  let {data:{session}}=await client.auth.getSession();
+  if(!session){const result=await client.auth.signInAnonymously();if(result.error)throw result.error;session=result.data.session}
+  const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"login",displayName:displayName}});
+  if(error)throw error;
+  moderationAuthReady=true;
+  $("moderationNotice").textContent="Chat is moderated. Your display name and IP address are stored securely for up to 10 days; flagged-word counts are retained for the same period.";
+  return true;
+ }catch(e){
+  moderationAuthReady=false;
+  const n=$("moderationNotice");if(n)n.textContent="Chat is unavailable until moderation is connected. The game can still be played.";
+  console.warn("Moderation setup unavailable",e);return false;
+ }
+}
+async function submitModeratedChat(textValue){
+ if(!moderationAuthReady)throw new Error("Moderated chat is not connected.");
+ const client=await getModerationClient();
+ const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"submit",displayName:names[myIndex()]||playerName,roomCode:room,message:textValue}});
+ if(error)throw error;
+ if(!data?.ok)throw new Error(data?.message||"Message blocked by chat moderation.");
+ return data.message;
+}
+async function fetchModeratedChat(messageId){
+ try{
+  if(!moderationAuthReady)return;
+  const client=await getModerationClient();
+  const {data,error}=await client.functions.invoke("moderate-chat",{body:{action:"fetch",messageId:messageId,roomCode:room}});
+  if(error||!data?.ok||!data.message)return;
+  appendChat(data.message);
+ }catch(e){console.warn("Could not retrieve moderated chat message",e)}
+}
+
+ async function sendChat(){
+  const input=$("guess"),v=String(input.value||"").trim().slice(0,240);if(!v)return;
+  if(!conn?.open){$("composerMeta").textContent="Chat unavailable — room connection is offline.";return}
+  if(!moderationAuthReady){$("composerMeta").textContent="Chat blocked: connect to the moderation service first.";return}
+  $("chatBtn").disabled=true;
+  try{
+   const approved=await submitModeratedChat(v);
+   appendChat(approved);input.value="";
+   if(!send({type:"chat",messageId:approved.id})){$("composerMeta").textContent="Message approved but could not be delivered; try again."}
+   else $("composerMeta").textContent="Message sent · moderated";
+  }catch(e){$("composerMeta").textContent=e.message||"Message blocked by moderation."}
+  finally{$("chatBtn").disabled=false}
+ }
  function insertEmoji(v){const input=$("guess"),a=input.selectionStart??input.value.length,b=input.selectionEnd??input.value.length;input.value=input.value.slice(0,a)+v+input.value.slice(b);input.focus();const p=a+v.length;input.setSelectionRange?.(p,p)}
 
  function stopTimers(){if(timer){clearInterval(timer);timer=null}if(nextWordTimer){clearTimeout(nextWordTimer);nextWordTimer=null}}
@@ -297,9 +356,9 @@ async function loadWordDecks(){
  function initHostPeer(id){return new Promise((resolve,reject)=>{peer=new Peer(id,{debug:0});peer.on("open",resolve);peer.on("error",reject);peer.on("connection",incoming=>{if(role!=="host"||conn){incoming.close();return}conn=incoming;bindConn();const opened=()=>setStatus("PLAYER CONNECTED");if(conn.open)opened();else conn.on("open",opened)})})}
  function initGuestPeer(){return new Promise((resolve,reject)=>{peer=new Peer({debug:0});peer.on("open",resolve);peer.on("error",reject)})}
  function updateInviteUrl(){const u=new URL("./",location.href);u.search="";u.hash="";u.searchParams.set("room",room);$("inviteLink").value=u.href}
- async function createRoom(){if(!playerName&&!readName())return;role="host";radioRole="host";names[0]=playerName;room=makeRoomId();$("makeRoom").disabled=true;setStatus("CREATING ROOM");try{await initHostPeer("hh-room-"+room.toLowerCase());$("roomCode").textContent=room;updateInviteUrl();$("wait").textContent="Room is open. Share the invite link and wait for Player 2…";setStatus("ROOM OPEN");$("makeRoom").classList.add("hide");show("hostSetup")}catch(e){setStatus("ROOM ERROR");$("wait").textContent="Could not create the room. Please try again.";$("makeRoom").disabled=false;alert("Could not create room. Check your connection and try again.")}}
+ async function createRoom(){if(!playerName&&!readName())return;await initModerationIdentity(playerName);role="host";radioRole="host";names[0]=playerName;room=makeRoomId();$("makeRoom").disabled=true;setStatus("CREATING ROOM");try{await initHostPeer("hh-room-"+room.toLowerCase());$("roomCode").textContent=room;updateInviteUrl();$("wait").textContent="Room is open. Share the invite link and wait for Player 2…";setStatus("ROOM OPEN");$("makeRoom").classList.add("hide");show("hostSetup")}catch(e){setStatus("ROOM ERROR");$("wait").textContent="Could not create the room. Please try again.";$("makeRoom").disabled=false;alert("Could not create room. Check your connection and try again.")}}
  function parseRoom(raw){let value=String(raw||"").trim();try{const u=new URL(value,location.href);value=u.searchParams.get("room")||u.hash.replace("#room=","")||value}catch(e){}value=value.toUpperCase().replace(/[^A-HJ-NP-Z2-9]/g,"");return value.length===10?value:""}
- async function joinRoom(){if(!readName())return;const code=parseRoom($("roomInput").value);if(!code){$("joinmsg").textContent="Enter a valid 10-character room code or invite link.";return}room=code;role="guest";radioRole="guest";$("connect").disabled=true;$("joinmsg").textContent="Connecting to "+code+"…";setStatus("CONNECTING");try{await initGuestPeer();conn=peer.connect("hh-room-"+room.toLowerCase(),{reliable:true});const opened=()=>{bindConn();send({type:"join",name:playerName});$("joinmsg").textContent="Connected. Waiting for the host…";setStatus("CONNECTED");show("lobby");$("hostConfig").classList.add("hide");$("guestWait").classList.remove("hide")};if(conn.open)opened();else conn.on("open",opened);conn.on("error",()=>{$("joinmsg").textContent="Could not connect. Check the invite link and try again.";$("connect").disabled=false})}catch(e){$("joinmsg").textContent="Could not connect. Check your connection and invite link.";setStatus("CONNECTION ERROR");$("connect").disabled=false}}
+ async function joinRoom(){if(!readName())return;await initModerationIdentity(playerName);const code=parseRoom($("roomInput").value);if(!code){$("joinmsg").textContent="Enter a valid 10-character room code or invite link.";return}room=code;role="guest";radioRole="guest";$("connect").disabled=true;$("joinmsg").textContent="Connecting to "+code+"…";setStatus("CONNECTING");try{await initGuestPeer();conn=peer.connect("hh-room-"+room.toLowerCase(),{reliable:true});const opened=()=>{bindConn();send({type:"join",name:playerName});$("joinmsg").textContent="Connected. Waiting for the host…";setStatus("CONNECTED");show("lobby");$("hostConfig").classList.add("hide");$("guestWait").classList.remove("hide")};if(conn.open)opened();else conn.on("open",opened);conn.on("error",()=>{$("joinmsg").textContent="Could not connect. Check the invite link and try again.";$("connect").disabled=false})}catch(e){$("joinmsg").textContent="Could not connect. Check your connection and invite link.";setStatus("CONNECTION ERROR");$("connect").disabled=false}}
  function renderLobbyPlayers(){$("lobbyPlayers").innerHTML=names.map((n,i)=>'<span class="playerchip">'+(i===0?"🟡 ":"🟣 ")+escapeHtml(n)+(i===0?" · HOST":"")+"</span>").join("")}
  function scoreboardHtml(active){return names.map((n,i)=>'<div class="player-score '+(active===i?"active-player":"")+'"><strong>'+escapeHtml(names[i])+'</strong><span><b>'+roundWins[i]+'</b> round wins · <b>'+solvedTotals[i]+'</b>/25 words solved</span></div>').join("")}
  function renderScoreboards(active){const html=scoreboardHtml(active);["giverScoreboard","guessScoreboard","passScoreboard","resultBoard","scoreboardBackdrop"].forEach(id=>{if($(id))$(id).innerHTML=html})}
@@ -443,7 +502,7 @@ async function loadWordDecks(){
   }
   if(d.type==="wordSecret"){word=d.word;hintSet=d.clues||[];category=d.category||category;colorCat(category);if(myIndex()===turnGiver)renderHintScreen();return}
   if(d.type==="cardReveal"){revealedHints=d.revealed||revealedHints;roundActive=true;awaitingHint=false;guestLetters=d.letters||guestLetters;renderCardReveal(d);if(myIndex()===turnGuesser){$("guess").disabled=false;$("guessBtn").disabled=false;$("composerMeta").textContent="Guess unlocked · tap 🎯 to submit"}return}
-  if(d.type==="chat"){appendChat(d.message);return}if(d.type==="guessAck"){$("composerMeta").textContent=d.accepted?"Guess received · checking…":"Guess rejected · "+(d.reason||"not your turn yet");return}if(d.type==="guessBlocked"){$("composerMeta").textContent="Host blocked guess: "+d.reason;renderGuessHistory();return}if(d.type==="guessHistory"){guessHistory=d.history||[];renderGuessHistory();return}if(d.type==="guessProcessed"){const ix=guessHistory.findIndex(g=>d.id?g.id===d.id:g.pending&&g.text===d.text);if(ix>=0)guessHistory[ix]={...guessHistory[ix],correct:!!d.correct,pending:false,time:guessHistory[ix].time||Date.now()};else guessHistory.push({id:d.id,text:d.text,correct:!!d.correct,time:Date.now()});renderGuessHistory();$("wordFeedback").textContent=d.correct?"🎉 Guess confirmed correct!":"❌ Guess incorrect · a letter was revealed";$("composerMeta").textContent=d.correct?"Correct guess!":"Wrong guess · reveal another hint";return}
+  if(d.type==="chat"){if(d.messageId)fetchModeratedChat(d.messageId);return}if(d.type==="guessAck"){$("composerMeta").textContent=d.accepted?"Guess received · checking…":"Guess rejected · "+(d.reason||"not your turn yet");return}if(d.type==="guessBlocked"){$("composerMeta").textContent="Host blocked guess: "+d.reason;renderGuessHistory();return}if(d.type==="guessHistory"){guessHistory=d.history||[];renderGuessHistory();return}if(d.type==="guessProcessed"){const ix=guessHistory.findIndex(g=>d.id?g.id===d.id:g.pending&&g.text===d.text);if(ix>=0)guessHistory[ix]={...guessHistory[ix],correct:!!d.correct,pending:false,time:guessHistory[ix].time||Date.now()};else guessHistory.push({id:d.id,text:d.text,correct:!!d.correct,time:Date.now()});renderGuessHistory();$("wordFeedback").textContent=d.correct?"🎉 Guess confirmed correct!":"❌ Guess incorrect · a letter was revealed";$("composerMeta").textContent=d.correct?"Correct guess!":"Wrong guess · reveal another hint";return}
   if(d.type==="tick"){$("clock").textContent=d.secs;$("clock").classList.toggle("low",d.secs<=15);return}
   if(d.type==="wrong"){awaitingHint=true;renderWrongLocal(d);return}
   if(d.type==="wordResult"){roundActive=false;renderWordResult(d);return}
@@ -451,7 +510,7 @@ async function loadWordDecks(){
   if(d.type==="transition"){renderTransition(d);return}
   if(d.type==="matchEnd"){renderMatchEnd(d);return}
  }
- function hostMsg(d){if(!d||!d.type)return;if(d.type==="radioToggle"){toggleHostRadio();return}if(d.type==="radioNext"||d.type==="radioError"){if(radioTrack)radioSkipIds.add(radioTrack.uuid);hostRadioNext();return}if(d.type==="join"){names[1]=safeName(d.name||"Player 2");send({type:"players",names:names});$("wait").textContent=names[1]+" joined! Configure the match below.";$("hostConfig").classList.remove("hide");$("guestWait").classList.add("hide");setStatus("2/2 CONNECTED");renderLobbyPlayers();show("lobby");if(radioStarted)broadcastRadioState();return}if(d.type==="wordPick"){if(turnGiver===1&&wordChoices.some(x=>x.word===d.word))beginChosenWord(d.word,d.cat);return}if(d.type==="wordSecret"){word=d.word;hintSet=d.clues||[];category=d.category||category;renderGuessScreen();renderBackCards("liveCards",hintSet.length);show("playScreen");return}if(d.type==="wordChosen"){turnGuesser=d.guesserIndex;turnGiver=d.giverIndex;category=d.cat;colorCat(category);guestLetters=Array(d.length||0).fill("");roundActive=true;awaitingHint=true;renderBackCards("liveCards",d.cardCount||5);renderGuessScreen();show("playScreen");return}if(d.type==="cardReveal"){revealedHints=d.revealed||revealedHints;roundActive=true;awaitingHint=false;guestLetters=d.letters||guestLetters;renderCardReveal(d);if(myIndex()===turnGuesser){$("guess").disabled=false;$("guessBtn").disabled=false;$("composerMeta").textContent="Guess unlocked · tap 🎯 to submit"}return}if(d.type==="chat"){const m=d.message;if(m&&m.id&&typeof m.text==="string")appendChat(m);return}if(d.type==="guessHistory"){guessHistory=d.history||[];renderGuessHistory();return}if(d.type==="hintReveal"){if(turnGiver===1)applyHintReveal(Number(d.index));return}if(d.type==="guessResult"){if(d.wordInTurn===wordInTurn&&d.round===roundNo)applyGuessOutcome(String(d.text||"").trim().slice(0,40),!!d.correct,d.id);return}if(d.type==="guess"){const accepted=false;send({type:"guessAck",value:String(d.value||"").trim(),accepted,reason:"Guesser verifies locally"});return}if(d.type==="dismissCorrect"){if(d.wordInTurn===wordInTurn&&d.round===roundNo&&!nextWordTimer){advanceAfterCorrect();return}}if(d.type==="readyNext"){advanceTransition();return}}
+ function hostMsg(d){if(!d||!d.type)return;if(d.type==="radioToggle"){toggleHostRadio();return}if(d.type==="radioNext"||d.type==="radioError"){if(radioTrack)radioSkipIds.add(radioTrack.uuid);hostRadioNext();return}if(d.type==="join"){names[1]=safeName(d.name||"Player 2");send({type:"players",names:names});$("wait").textContent=names[1]+" joined! Configure the match below.";$("hostConfig").classList.remove("hide");$("guestWait").classList.add("hide");setStatus("2/2 CONNECTED");renderLobbyPlayers();show("lobby");if(radioStarted)broadcastRadioState();return}if(d.type==="wordPick"){if(turnGiver===1&&wordChoices.some(x=>x.word===d.word))beginChosenWord(d.word,d.cat);return}if(d.type==="wordSecret"){word=d.word;hintSet=d.clues||[];category=d.category||category;renderGuessScreen();renderBackCards("liveCards",hintSet.length);show("playScreen");return}if(d.type==="wordChosen"){turnGuesser=d.guesserIndex;turnGiver=d.giverIndex;category=d.cat;colorCat(category);guestLetters=Array(d.length||0).fill("");roundActive=true;awaitingHint=true;renderBackCards("liveCards",d.cardCount||5);renderGuessScreen();show("playScreen");return}if(d.type==="cardReveal"){revealedHints=d.revealed||revealedHints;roundActive=true;awaitingHint=false;guestLetters=d.letters||guestLetters;renderCardReveal(d);if(myIndex()===turnGuesser){$("guess").disabled=false;$("guessBtn").disabled=false;$("composerMeta").textContent="Guess unlocked · tap 🎯 to submit"}return}if(d.type==="chat"){if(d.messageId)fetchModeratedChat(d.messageId);return}if(d.type==="guessHistory"){guessHistory=d.history||[];renderGuessHistory();return}if(d.type==="hintReveal"){if(turnGiver===1)applyHintReveal(Number(d.index));return}if(d.type==="guessResult"){if(d.wordInTurn===wordInTurn&&d.round===roundNo)applyGuessOutcome(String(d.text||"").trim().slice(0,40),!!d.correct,d.id);return}if(d.type==="guess"){const accepted=false;send({type:"guessAck",value:String(d.value||"").trim(),accepted,reason:"Guesser verifies locally"});return}if(d.type==="dismissCorrect"){if(d.wordInTurn===wordInTurn&&d.round===roundNo&&!nextWordTimer){advanceAfterCorrect();return}}if(d.type==="readyNext"){advanceTransition();return}}
  $("hostBtn").onclick=()=>{if(!readName())return;show("hostSetup");$("makeRoom").classList.remove("hide");$("makeRoom").disabled=false;createRoom()};
  $("joinBtn").onclick=()=>{if(!readName())return;show("joinSetup");if(inviteRoom)$("roomInput").value=inviteRoom};
  $("makeRoom").onclick=()=>{if(peer){try{peer.destroy()}catch(e){}peer=null}conn=null;createRoom()};
