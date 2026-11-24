@@ -47,10 +47,10 @@ Admin access is checked on the server for every dashboard and filter-list write 
 
 ## Moderation data
 - **Chat filter:** server-side word/phrase matching; blocked submissions are not stored in the chat table and never forwarded to the other peer.
-- **Counters:** each blocked submission creates a moderation event with the matched terms and number of flagged occurrences; dashboard aggregates flagged occurrences and event totals per display name for the rolling retention period.
+- **Counters:** each blocked submission creates a moderation event with the matched terms and number of flagged occurrences; dashboard aggregates flagged occurrences and event totals per Supabase user ID (with display name) for the rolling retention period.
 - **Term list:** add words or phrases and toggle filters in the dashboard.
 - **Logs:** login/attempts retain display name, room, excerpt, matched terms, counts, timestamp, and IP in a protected database table.
-- **Retention:** data is scheduled to expire after 10 days. Confirm the cron job runs; SQL cron schedule runs daily, so records can remain a little beyond 10 days until the next purge.
+- **Retention:** data is scheduled to expire after 10 days. Confirm the cron job runs; The hourly cleanup removes expired records within roughly one hour.
 
 ## Privacy / operational notes
 - Display names are user-entered and are not unique identities. Anonymous auth user IDs are the pseudonymous identifier.
