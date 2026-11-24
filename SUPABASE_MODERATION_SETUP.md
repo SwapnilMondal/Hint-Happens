@@ -1,4 +1,4 @@
-# Hint Happens — Supabase Chat Moderation Setup
+# Hints Happen — Supabase Chat Moderation Setup
 
 This adds **server-side chat moderation**. Messages are sent to a Supabase Edge Function first; filtered messages are rejected and never forwarded by PeerJS. The Supabase function is the moderation source of truth.
 
