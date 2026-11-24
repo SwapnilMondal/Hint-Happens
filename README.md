@@ -1,56 +1,43 @@
 # Hint Happens!
 
-A mobile-first two-player browser word game. Open the link on two phones; no app installation is required.
+A quick two-player word-and-clue game. Open the game on two phones or computers, create a room, and invite your opponent. No player account or sign-in is needed.
 
-## Match rules
-- **5 rounds per match.**
-- In each round, Player 1 guesses **5 words** while Player 2 gives clues.
-- Then the game displays **“Now [Player 2]!”** and the roles switch: Player 2 guesses 5 words while Player 1 gives clues.
-- That is **10 words per round and 50 words per full match**.
-- The player who solves more of their five words wins that round. Most round wins after five rounds wins the match; a tied round awards neither player a round win.
-- Each word has a 60-second timer. Wrong guesses reveal random letters; revealing 60% or more ends that word.
-- Players enter their own names, and the names appear in turn prompts and the scoreboards.
+## How to play
+- A match lasts **5 rounds**.
+- Each round, both players take turns guessing **5 words** while the other gives clues (**10 words per round; 50 per match**).
+- Each word has **60 seconds**. Wrong guesses reveal random letters; revealing 60% or more ends the word.
+- The player who solves more words wins the round. The match winner is the player with the most round wins. A tied round awards neither player a round win.
+- Use your own names; they appear in turn prompts and scoreboards.
 
-## Rooms and joining
-- The host creates a fresh 10-character room ID with browser Web Crypto when available.
-- The game creates a shareable invite URL. It opens the game with that room code prefilled, so the second player only needs to enter their name and tap join.
+## Rooms
+- Create a room to generate a 10-character code and invite link.
+- The second player opens the link or enters the code to join.
 
 ## Word decks
-- `word-decks.json` contains **1,000 distinct entries in each of seven categories (7,000 total)**: Animals, Countries & Regions, Food, Places, Movies, Music, and Sports.
-- Difficulty changes clue style: Easy clues are more direct; Mixed clues balance hints with playful prompts; Hard clues use more oblique, puzzle-like hints.
-- A match draws 50 words from the selected categories. Recently used words are cached in the host's browser session to reduce repeats across matches in that same session.
-- Optional custom-word mode replaces the standard deck and requires at least 50 unique entries.
+`word-decks.json` contains 7,000 words across Animals, Countries & Regions, Food, Places, Movies, Music, and Sports (1,000 entries per category).
+- **Easy:** straightforward clues
+- **Mixed:** a balance of direct and playful clues
+- **Hard:** more indirect, puzzle-style clues
+- A full match draws 50 words. The host's browser session tracks recently used words to reduce repeats.
+- Custom-word mode replaces the standard deck and requires 50 unique words.
 
-### Data-source notes
-The repository's `word-decks.json` includes the category-level source notes. The word pools are compiled from public word lists and datasets, combined with the original game's vocabulary and additional curated terms. They are normalized and de-duplicated for gameplay. Some lists include broad taxonomic names, administrative regions, culinary terms, musical styles, and sports vocabulary to build variety. They are not a definitive taxonomy or official reference list.
-
-Source notes currently include:
-- Animal names: `jneidel/animal-names` plus the original game list.
-- Countries and regions: `country-regions/country-region-data` and `dr5hn/countries-states-cities-database`.
-- Places: `russ666/all-countries-and-cities-json` plus original landmarks.
-- Food: USDA-derived CalorTracker food names (CC0), Food-101 names, other food lists, and curated additions.
-- Movies: MovieLens 1M titles plus original game titles.
-- Music: `voltraco/genres` plus original game music terms.
-- Sports: `clem9669/wordlists`, original game terms, and curated additions.
+The word pools are compiled from public lists and datasets, then normalized and de-duplicated for gameplay. They are not intended as definitive reference lists. Source notes are included in the word-deck file.
 
 ## Radio
-- The radio controls use the free Radio Browser station directory to find HTTPS MP3 streams tagged Lo-fi, Rock, or Pop/2000s.
-- The same 📻 icon is always shown; mute state is represented with a diagonal cross over the icon.
-- Station and playback state are relayed through the existing room connection. Both phones receive the selected station and a scheduled start time; network buffering makes exact synchronization best-effort.
-- The radio is a live broadcast, not a song catalog. Each station controls its own content, availability, licensing, and territory restrictions.
-- Browser audio may require a user tap before playback. The app sets radio volume to 16%.
+- Radio Browser is used to discover live HTTPS stations tagged Lo-fi, Rock, or Pop/2000s.
+- Both players share the selected station and scheduled start through the room connection. Exact sync is best-effort due to buffering.
+- Audio playback may require a tap. The default volume is 16%.
+- Station content, availability, licensing, and territory restrictions are managed by the broadcaster.
 
-## Files
-- `hinthappen_index.html` — canonical game.
-- `index.html` — GitHub Pages entry redirect; preserves the invite query string.
-- `word-decks.json` — static 7-category word library.
+## Chat moderation and privacy
+- Chat messages are checked server-side before delivery; flagged slurs, profanity, abusive phrases, and adult-content terms are blocked.
+- Blocked-message attempts are counted and logged by display name and IP address for up to 10 days.
+- The moderation backend is Supabase. See `SUPABASE_MODERATION_SETUP.md` for maintenance details.
+- Chat filtering is a blocklist-based filter, not a comprehensive semantic safety classifier.
 
-
-
-## Privacy and external services
-- No game account, private backend, database, radio API key, or root access is used.
-- Radio Browser receives genre/tag station-discovery requests, not room codes, player names, guesses, or scores.
-
-## Answer celebrations and winner
-- When a guess is correct, the host sends one playful pop-culture/pun celebration with the answer in the `wordResult` message, so both players see the same celebration.
-- At match end, both screens show the winner banner: **“Are you taking the Hint?! You’re the winner, [Player name]!”**;
+## Project files
+- `hinthappen_index.html` — game interface and logic.
+- `index.html` — root redirect that preserves room invite parameters.
+- `word-decks.json` — word library.
+- `moderation.html`, `supabase/schema.sql`, and `supabase/functions/moderate-chat/index.ts` — moderation dashboard and backend.
+- `SUPABASE_MODERATION_SETUP.md` — backend setup and maintenance notes.
