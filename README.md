@@ -55,3 +55,7 @@ Open `index.html` on the published site. In repository Settings → Pages, use *
 - Radio Browser receives genre/tag station-discovery requests, not room codes, player names, guesses, or scores.
 - PeerJS handles room signaling/data exchange between the two phones. The radio stream provider receives a normal audio-stream connection from each phone.
 - As with ordinary web services, these external services can receive network metadata such as IP address and browser headers.
+
+## Answer celebrations and winner
+- When a guess is correct, the host sends one playful pop-culture/pun celebration with the answer in the `wordResult` message, so both players see the same celebration.
+- At match end, both screens show the winner banner: **“Are you taking the Hint?! You’re the winner, [Player name]!”**; ties get a separate playful tie message.
