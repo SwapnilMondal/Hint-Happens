@@ -64,7 +64,7 @@
 .cards-panel{padding:12px;display:flex;flex-direction:column}.cards-panel .cards-heading{margin-bottom:10px}.cards-panel .cards{margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;align-content:start}
 .cards-panel .hint{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-width:0;min-height:105px;padding:10px 8px;border:1px solid #6a6d91;border-radius:16px;background:linear-gradient(150deg,#3b3e60,#292b48);box-shadow:0 9px 18px #07091655;cursor:pointer;font-size:12px;line-height:1.3;overflow-wrap:anywhere}
 .cards-panel .hint small{font-size:9px;letter-spacing:.14em;color:#b8bad5;margin-bottom:6px}.cards-panel .hint .card-back-icon{font-size:28px;color:var(--accent)}
-.cards-panel .hint.is-revealed{border-color:var(--accent);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 22%,#343653),#292b48);color:#fff5d9;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent),0 10px 20px #05061250}
+.cards-panel .hint.is-revealed{animation:cardFlip .35s ease-out;border-color:var(--accent);background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 22%,#343653),#292b48);color:#fff5d9;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent),0 10px 20px #05061250}
 .cards-panel .hint.is-revealed small{color:var(--accent2)}.cards-panel .hint:disabled{opacity:1;cursor:default}
 .word-feedback{min-height:28px;margin-top:10px;color:#d8d9ed;font-size:12px;line-height:1.4;text-align:center}
 .composer-wrap{position:sticky;bottom:0;z-index:5;margin-top:auto;padding:10px 0 0;background:linear-gradient(180deg,transparent,#22243f 22%)}
@@ -334,12 +334,12 @@ async function loadWordDecks(){
  function renderBackCards(id,count){const el=$("liveCards");if(!el)return;$("cardsHeading").textContent="HINT CARDS";$("cardsSubheading").textContent="Waiting for the chooser";el.innerHTML=Array.from({length:count},(_,i)=>'<div class="hint"><small>HINT '+(i+1)+'</small><span class="card-back-icon">✦</span><b>HIDDEN</b></div>').join("");}
  function selectWord(index){if(myIndex()!==turnGiver||!wordChoices[index])return;const item=wordChoices[index];if(role==="host")beginChosenWord(item.word,item.cat);else send({type:"wordPick",word:item.word,cat:item.cat})}
  function beginChosenWord(w,cat){
-  if(role!=="host")return;word=String(w);category=String(cat);sessionWords.push(word);
+  if(role!=="host")return;word=String(w);category=String(cat);colorCat(category);sessionWords.push(word);
   hintSet=themedClues(word,category);while(hintSet.length<5)hintSet.push("A bonus clue: "+normalize(word).length+" letters — use your detective instincts!");
   hintSet=shuffle(hintSet).slice(0,5);revealed=[];revealedHints=[];revealedHintText={};guessHistory=[];guestLetters=Array(normalize(word).length).fill("");
   secs=60;roundActive=true;awaitingHint=true;currentClue="";
   $("roundbadge").textContent="ROUND "+roundNo+"/"+TOTAL_ROUNDS+" · WORD "+wordInTurn+"/"+WORDS_PER_TURN;
-  $("roundbadge").textContent="ROUND "+roundNo+"/"+TOTAL_ROUNDS+" · "+category;$("wordProgress").textContent=wordInTurn+" / "+WORDS_PER_TURN;
+  $("wordProgress").textContent=wordInTurn+" / "+WORDS_PER_TURN;
   $("secret").textContent=word;$("revealcount").textContent="Flip a hint card to start the 60-second timer";$("maskedCaption").textContent="YOUR SECRET WORD";
   $("wordFeedback").textContent="Waiting for the word giver to flip a card…";$("clock").textContent="60";$("clock").classList.remove("low");
   $("guess").value="";$("guess").disabled=true;$("guessBtn").disabled=true;$("missBtn").disabled=true;
@@ -394,7 +394,7 @@ async function loadWordDecks(){
  function finishWord(reason){if(!roundActive)return;roundActive=false;awaitingHint=false;if(timer){clearInterval(timer);timer=null}if(reason==="correct"){turnStats.correct++;solvedTotals[turnGuesser]++;sfx("good")}else sfx("bad");const d={type:"wordResult",reason:reason,answer:word,correct:reason==="correct",phrase:reason==="correct"?correctPhrases[Math.random()*correctPhrases.length|0]:"",turnCorrect:turnStats.correct,wordInTurn:wordInTurn,round:roundNo};send(d);send({type:"scoreUpdate",roundWins:roundWins,solvedTotals:solvedTotals});renderWordResult(d);nextWordTimer=setTimeout(()=>{nextWordTimer=null;if(wordInTurn<WORDS_PER_TURN)startWord();else completeTurn()},1800)}
  function renderWordResult(d){
   const message=d.correct?"🎉 Correct! "+d.answer+" — "+(d.phrase||"Brilliant guess!"):"⏰ "+(d.reason==="time"?"Time's up. ":d.reason==="hints"?"All hints revealed. ":"The word was ")+d.answer;
-  $("wordFeedback").textContent=message;$("revealcount").textContent=d.answer;
+  $("wordFeedback").textContent=message;$("revealcount").textContent=d.answer;$("maskedCaption").textContent="WORD REVEALED";$("secret").textContent=d.answer;
   $("guess").disabled=true;$("guessBtn").disabled=true;renderScoreboards(turnGuesser);show("playScreen")
  }
  function completeTurn(){if(role!=="host")return;roundStats[roundNo-1][turnGuesser]={correct:turnStats.correct};if(turnGiver===0){transitionType="swap";showTransition("Now "+names[1]+"!",names[1]+" chooses the words now. Swap roles: "+names[0]+" guesses.","START "+names[1].toUpperCase()+"'S WORDS");return}const a=roundStats[roundNo-1][0]?.correct||0,b=roundStats[roundNo-1][1]?.correct||0;let result;if(a>b){roundWins[0]++;result=names[0]+" wins this round · "+a+"–"+b}else if(b>a){roundWins[1]++;result=names[1]+" wins this round · "+b+"–"+a}else result="Round tied · "+a+"–"+b;send({type:"scoreUpdate",roundWins:roundWins,solvedTotals:solvedTotals});if(roundNo>=TOTAL_ROUNDS){matchEnd();return}transitionType="nextRound";showTransition("Round "+roundNo+" complete",result+". Next up: "+names[0]+" chooses words in Round "+(roundNo+1)+".","START ROUND "+(roundNo+1))}
