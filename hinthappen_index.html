@@ -131,6 +131,27 @@ body{background:radial-gradient(ellipse at 12% 0%,#f9e4cf 0,transparent 38%),lin
 @keyframes noseDropBob{0%,100%{transform:rotate(35deg) translateY(0)}50%{transform:rotate(35deg) translateY(2px)}}
 @media(max-width:420px){.storybook-stage{width:min(100%,390px);margin:6px auto 13px}.storybook-lines{padding:16px 9px;gap:5px}.storybook-lines span{padding:5px 10px;font-size:12px}.storybook-nose-drop{width:6px;height:8px}}
 @media(prefers-reduced-motion:reduce){.storybook-stage,.storybook-art,.storybook-lines span,.hero,.storybook-nose-drop{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}
+/* Theme sync polish: all gameplay surfaces inherit the match palette, with eased cross-device transitions. */
+:root{--theme-motion:1.15s}
+html,body,body::before,.wrap,.play-board,.play-board *{transition:background-color var(--theme-motion) ease,color var(--theme-motion) ease,border-color var(--theme-motion) ease,box-shadow var(--theme-motion) ease}
+body{background:radial-gradient(ellipse at 12% 0%,color-mix(in srgb,var(--accent2) 48%,var(--bg)),transparent 44%),linear-gradient(180deg,color-mix(in srgb,var(--panel) 90%,white),var(--bg));color:var(--ink)}
+.play-board{background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--accent) 20%,transparent),transparent 50%),linear-gradient(145deg,color-mix(in srgb,var(--panel) 92%,white),color-mix(in srgb,var(--bg) 80%,var(--accent)));border-color:color-mix(in srgb,var(--accent) 55%,var(--line));box-shadow:0 22px 64px color-mix(in srgb,var(--bg) 50%,#000),0 0 28px color-mix(in srgb,var(--accent) 15%,transparent)}
+.history-panel,.cards-panel{background:color-mix(in srgb,var(--panel) 86%,transparent);border-color:color-mix(in srgb,var(--accent) 22%,var(--line))}
+.cards-panel .hint{background:linear-gradient(150deg,color-mix(in srgb,var(--panel2) 92%,white),color-mix(in srgb,var(--panel) 86%,var(--accent)));border-color:color-mix(in srgb,var(--accent) 28%,var(--line));color:var(--ink)}
+.cards-panel .hint small,.history-heading,.cards-heading{color:var(--muted)}
+.cards-panel .hint .card-back-icon{color:var(--accent)}
+.cards-panel .hint.is-revealed{background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 22%,var(--panel2)),var(--panel));border-color:var(--accent);color:var(--ink)}
+.guess-bubble{background:color-mix(in srgb,var(--panel2) 88%,var(--accent));color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 16%,var(--line))}
+.guess-bubble.good{background:color-mix(in srgb,var(--good) 32%,var(--panel));color:var(--ink)}
+.guess-bubble.bad{background:color-mix(in srgb,var(--bad) 20%,var(--panel));color:var(--ink)}
+.guess-composer{background:color-mix(in srgb,var(--panel) 88%,transparent);border-color:var(--line)}
+.guess-composer .field{color:var(--ink)}
+.timer-card,.player-score,.stat,.playerchip,.scoreboard-watermark .player-score{background:color-mix(in srgb,var(--panel) 88%,var(--accent));border-color:var(--line)}
+.word-zone .letter{background:color-mix(in srgb,var(--panel2) 75%,var(--accent));color:var(--ink);border-color:var(--line)}
+.word-zone .letter.open{background:var(--accent);color:var(--panel)}
+.word-mask{color:var(--accent);text-shadow:0 0 26px color-mix(in srgb,var(--accent) 25%,transparent)}
+.word-feedback{color:var(--ink)}
+.composer-wrap{background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--bg) 92%,transparent) 22%)}
 </style></head><body><main class="wrap">
 <header class="header"><div class="brand">💡 HINTS HAPPEN!</div><div class="badge" id="status">LOADING WORDS</div></header>
 <section id="home" class="screen active"><div class="panel">
@@ -171,7 +192,7 @@ body{background:radial-gradient(ellipse at 12% 0%,#f9e4cf 0,transparent 38%),lin
    <div class="play-top-right"><div class="timer-card"><span>TIME</span><b class="timer" id="clock">60</b><small id="wordProgress">1 / 5</small></div><button class="soundbtn" id="soundtoggleHint">🔊</button><button class="soundbtn" id="soundtoggleGuess" style="display:none">🔊</button></div>
    <div class="scoreboard-watermark" id="scoreboardBackdrop"></div>
   </div>
-  <div class="word-zone"><div class="word-caption" id="maskedCaption">YOUR SECRET WORD</div><div class="word-mask" id="secret">— — — — —</div><div class="muted" id="revealcount">Waiting for word selection…</div><div class="letterrow" id="letters"></div></div>
+  <div class="word-zone"><div class="word-caption" id="maskedCaption">YOUR SECRET WORD</div><div class="word-mask" id="secret">— — — — —</div><div class="muted" id="revealcount">Waiting for word selection…</div><div class="letterrow hide" id="letters"></div></div>
   <div class="play-content">
    <aside class="history-panel"><div class="history-heading"><span>💬 CHAT & GUESSES</span><small id="chatConnection">ROOM CHAT</small></div><div id="guessFeed" class="guess-feed"><div class="history-empty">Messages appear here…</div></div></aside>
    <section class="cards-panel"><div class="cards-heading"><span id="cardsHeading">HINT CARDS</span><small id="cardsSubheading">Tap a card to reveal</small></div><div class="cards" id="liveCards"></div><div class="word-feedback" id="wordFeedback">Waiting for the word chooser…</div></section>
@@ -509,7 +530,7 @@ async function fetchModeratedChat(messageId){
  function renderWordResult(d){
   const message=d.correct?"🎉 Correct! "+d.answer+" — "+(d.phrase||"Brilliant guess!"):"⏰ "+(d.reason==="time"?"Time's up. ":d.reason==="hints"?"All hints revealed. ":"The word was ")+d.answer;
   $("wordFeedback").innerHTML=d.correct?'<div class="win-notice"><div class="win-emoji">🎊✨🏆</div><small>HINTS HAPPEN · CORRECT GUESS</small><strong>'+escapeHtml(d.answer)+'!</strong><p>'+escapeHtml(d.phrase||"Brilliant guess!")+'</p><span>YOU CRACKED THE CLUE!</span></div>':escapeHtml(message);
-  $("revealcount").textContent=d.answer;$("maskedCaption").textContent="WORD REVEALED";$("secret").textContent=d.answer;
+  $("revealcount").textContent=d.correct?"Correct guess!":(d.reason==="time"?"Time expired":d.reason==="hints"?"All hints revealed":"Word revealed");$("maskedCaption").textContent="WORD REVEALED";$("secret").textContent=d.answer;
   $("guessBtn").disabled=true;renderScoreboards(turnGuesser);show("playScreen");if(d.correct){const notice=$("wordFeedback").querySelector(".win-notice");if(notice){let dismissed=false;const dismiss=()=>{if(dismissed)return;dismissed=true;notice.remove();if(role==="host")advanceAfterCorrect();else send({type:"dismissCorrect",wordInTurn:wordInTurn,round:roundNo})};notice.onclick=dismiss;setTimeout(dismiss,7000)}} 
  }
  function completeTurn(){if(role!=="host")return;roundStats[roundNo-1][turnGuesser]={correct:turnStats.correct};if(turnGiver===0){rotateMatchTheme();transitionType="swap";showTransition("Now "+names[1]+"!",names[1]+" chooses the words now. Swap roles: "+names[0]+" guesses.","START "+names[1].toUpperCase()+"'S WORDS");return}const a=roundStats[roundNo-1][0]?.correct||0,b=roundStats[roundNo-1][1]?.correct||0;let result;if(a>b){roundWins[0]++;result=names[0]+" wins this round · "+a+"–"+b;}else if(b>a){roundWins[1]++;result=names[1]+" wins this round · "+b+"–"+a;}else result="Round tied · "+a+"–"+b;rotateMatchTheme();send({type:"scoreUpdate",roundWins:roundWins,solvedTotals:solvedTotals});if(roundNo>=TOTAL_ROUNDS){matchEnd();return}transitionType="nextRound";showTransition("Round "+roundNo+" complete",result+". Next up: "+names[0]+" chooses words in Round "+(roundNo+1)+".","START ROUND "+(roundNo+1))}
