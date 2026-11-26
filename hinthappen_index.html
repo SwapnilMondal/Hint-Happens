@@ -229,6 +229,65 @@ body{
 .guess-bubble{background:color-mix(in srgb,#fff 86%,var(--bg))!important;color:#625549!important;border:1px solid color-mix(in srgb,var(--accent) 14%,white)!important;border-radius:18px!important;box-shadow:0 2px 6px #776b560a!important}
 input,textarea,select,.guess-composer{background:#fffdf9!important;color:#54483e!important;border-color:color-mix(in srgb,var(--accent) 26%,white)!important;border-radius:18px!important}
 @media(prefers-reduced-motion:reduce){body{animation:none!important}.cards-panel .hint,.hint,.word-option,.word-choice{transition:none!important}}
+/* Board-game polish: tactile clue cards + game-box opening screen */
+:root{--paper:#fffdf8;--table:#f4ecdf}
+body{
+ background-image:
+  radial-gradient(ellipse at 18% 18%,color-mix(in srgb,var(--accent) 19%,#f8f1e5),transparent 48%),
+  radial-gradient(ellipse at 86% 72%,color-mix(in srgb,var(--accent2) 26%,#f8f1e5),transparent 50%),
+  repeating-linear-gradient(0deg,#927b4c05 0px,#927b4c05 1px,transparent 1px,transparent 4px),
+  linear-gradient(145deg,#f7f0e5,#f4ecdf)!important;
+}
+#home>.panel:first-child{
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid #d8c8ad!important;border-radius:30px!important;
+ background:linear-gradient(160deg,#fffaf1e8,#f3ead9e8)!important;
+ box-shadow:0 16px 32px #715e4019,0 2px 0 #fff9ed inset!important;
+ padding:clamp(18px,5vw,26px)!important;
+}
+#home>.panel:first-child:before{
+ content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.22;
+ background-image:repeating-linear-gradient(90deg,transparent 0px,transparent 3px,#b49a6d12 4px),repeating-linear-gradient(0deg,transparent 0px,transparent 3px,#b49a6d12 4px);
+}
+#home .storybook-stage{
+ border-radius:26px!important;border:1px solid #e5d5bd!important;
+ background:linear-gradient(145deg,#fffcf6,#f4e8d5)!important;
+ box-shadow:0 10px 20px #715f4314,0 1px 0 #fff inset!important;
+ overflow:hidden;transform:translateZ(0);
+}
+#home .storybook-art{filter:drop-shadow(0 8px 7px #79613b25);transform-origin:center;transition:transform .8s cubic-bezier(.2,.7,.2,1),filter .8s ease}
+#home .storybook-stage:hover .storybook-art{transform:scale(1.025);filter:drop-shadow(0 11px 9px #79613b30)}
+#home .storybook-lines span{animation:storybook-line-in .65s both;animation-delay:calc(var(--line-order,0)*.12s)}
+#home .storybook-lines span:nth-child(2){--line-order:1}
+#home .storybook-lines span:nth-child(3){--line-order:2}
+@keyframes storybook-line-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#home .hero{
+ margin:20px 0 22px!important;padding:15px 18px!important;
+ border-left:3px solid color-mix(in srgb,var(--accent) 42%,#c7a77d);
+ border-radius:0 18px 18px 0;
+ background:linear-gradient(90deg,#fffaf2a8,transparent);
+ text-shadow:0 1px #fff9ef;
+}
+#home #playerName{
+ background:linear-gradient(180deg,#fffefa,#fffaf2)!important;
+ border:1px solid #ddcbb1!important;border-radius:17px!important;
+ box-shadow:0 3px 0 #e6d8c4,0 1px 0 #fff inset!important;
+ padding:15px 16px!important;transition:box-shadow .25s ease,border-color .25s ease,transform .25s ease!important;
+}
+#home #playerName:focus{border-color:color-mix(in srgb,var(--accent) 45%,#d8c3a5)!important;box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 14%,transparent),0 3px 0 #e6d8c4!important;transform:translateY(-1px)}
+#home #hostBtn,#home #joinBtn{
+ border-radius:18px!important;box-shadow:0 4px 0 color-mix(in srgb,var(--accent) 20%,#bca98f),0 1px 0 #fff8e9 inset!important;
+ transition:transform .18s ease,box-shadow .18s ease,filter .3s ease!important;
+}
+#home #hostBtn:active,#home #joinBtn:active{transform:translateY(2px)!important;box-shadow:0 1px 0 color-mix(in srgb,var(--accent) 18%,#bca98f)!important}
+#home>.panel:last-child{background:#fffaf2c9!important;border:1px solid #e4d4bd!important;border-radius:24px!important;box-shadow:0 7px 18px #79634112,0 1px 0 #fff inset!important}
+.cards-panel .hint,.hint,.word-option,.word-choice{
+ background-color:#fffdf8!important;
+ border-color:#e7dac8!important;
+ box-shadow:0 3px 0 #eee4d5,0 6px 14px #725d3e12,0 1px 0 #fff inset!important;
+}
+.cards-panel .hint:hover,.hint:hover,.word-option:hover,.word-choice:hover{box-shadow:0 4px 0 #e9dfd1,0 9px 18px #725d3e19!important}
+.cards-panel .hint.is-revealed,.hint.is-revealed{box-shadow:0 3px 0 #e8ddcd,0 6px 16px #725d3e14!important}
 </style></head><body><main class="wrap">
 <header class="header"><div class="brand">💡 HINTS HAPPEN!</div><div class="badge" id="status">LOADING WORDS</div></header>
 <section id="home" class="screen active"><div class="panel">
