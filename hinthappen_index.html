@@ -288,6 +288,40 @@ body{
 }
 .cards-panel .hint:hover,.hint:hover,.word-option:hover,.word-choice:hover{box-shadow:0 4px 0 #e9dfd1,0 9px 18px #725d3e19!important}
 .cards-panel .hint.is-revealed,.hint.is-revealed{box-shadow:0 3px 0 #e8ddcd,0 6px 16px #725d3e14!important}
+
+/* November cozy storybook refresh: stagger the tagline and deepen the paper/game-box feel */
+#home .hero{animation:none!important;display:flex!important;flex-direction:column!important;gap:3px!important}
+#home .hero-line{display:block;opacity:0;transform:translateY(12px);animation:heroLineReveal .72s cubic-bezier(.2,.75,.2,1) forwards}
+#home .hero-line-1{animation-delay:3.45s}
+#home .hero-line-2{animation-delay:4.15s}
+#home .hero-line-3{animation-delay:4.85s}
+#home .hero-line strong{display:inline-block}
+#home .hero-soft{font-weight:500}
+@keyframes heroLineReveal{0%{opacity:0;transform:translateY(12px);filter:blur(2px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+/* Warm parchment surface with faint hand-drawn travel motifs */
+body{background-image:
+ radial-gradient(ellipse at 12% 14%,#d5e2c7a0,transparent 38%),
+ radial-gradient(ellipse at 88% 76%,#f2d6c2a0,transparent 40%),
+ radial-gradient(ellipse at 68% 12%,#d7e4e8a0,transparent 32%),
+ repeating-linear-gradient(0deg,#9e875b08 0px,#9e875b08 1px,transparent 1px,transparent 4px),
+ linear-gradient(145deg,#f8f2e8,#f1e7d8)!important}
+#home>.panel:first-child{background:
+ radial-gradient(ellipse at 4% 0%,#dce7d1aa,transparent 34%),
+ radial-gradient(ellipse at 98% 90%,#f3d6c3aa,transparent 36%),
+ linear-gradient(155deg,#fffaf2,#f5ecdf)!important}
+#home>.panel:first-child:after{content:"✦   ✈   ❧";position:absolute;top:10px;right:16px;z-index:0;color:#b8a17a;opacity:.26;font:18px Georgia,serif;letter-spacing:.42em;transform:rotate(8deg);pointer-events:none}
+#home .storybook-stage{box-shadow:0 12px 24px #8b6b4d20,0 1px 0 #fff inset!important}
+#home .hero{position:relative;z-index:1;border-left-color:#b99a70!important;background:linear-gradient(90deg,#fffaf2c5,transparent)!important}
+#home #hostBtn,#home #joinBtn{background:linear-gradient(150deg,#f5e2c7,#e9d2b1)!important;color:#65513c!important;border-color:#d7c0a1!important}
+#home #joinBtn{background:linear-gradient(150deg,#f8f2e8,#eee3d3)!important}
+.cards-panel{background:linear-gradient(160deg,#fffaf2,#f5ebde)!important;border-color:#e4d3bd!important;box-shadow:0 5px 0 #e9ddce,0 8px 18px #90734f12,0 1px 0 #fff inset!important}
+.cards-panel .cards-heading{color:#876e55!important}
+.cards-panel .hint{position:relative!important;overflow:hidden!important;background:linear-gradient(150deg,#fffdf8,#f8f0e5)!important;border:1px solid #e5d4bd!important;border-radius:15px!important;box-shadow:0 4px 0 #eadfce,0 9px 18px #876f4c12,0 1px 0 #fff inset!important;color:#66533f!important}
+.cards-panel .hint:before{content:"";position:absolute;inset:5px;border:1px solid #cbb39355;border-radius:10px;pointer-events:none}
+.cards-panel .hint small{color:#a17d5c!important}
+.cards-panel .hint .card-back-icon{color:#b58b61!important;text-shadow:0 2px #fff8e8}
+.cards-panel .hint.is-revealed{background:linear-gradient(150deg,#fffaf0,#f1e4d2)!important;border-color:#cdb18c!important}
+@media(prefers-reduced-motion:reduce){#home .hero-line{animation:none!important;opacity:1!important;transform:none!important}}
 </style></head><body><main class="wrap">
 <header class="header"><div class="brand">💡 HINTS HAPPEN!</div><div class="badge" id="status">LOADING WORDS</div></header>
 <section id="home" class="screen active"><div class="panel">
@@ -295,7 +329,7 @@ body{
 <img class="storybook-art" src="./IMG_6945.gif" alt="" aria-hidden="true">
 <span class="storybook-nose-drop" aria-hidden="true"></span>
 <div class="storybook-lines"><span>Too few of words</span><span>Chuckle and giggles,</span><span>On an adventure, here they go!</span></div>
-</div><div class="hero"><strong>Five clues.</strong><br><strong>One word.</strong><br><span style="font-weight:500">Win and </span><strong>Switch it up.</strong></div>
+</div><div class="hero" aria-label="Five clues. One word. Win and switch it up."><span class="hero-line hero-line-1"><strong>Five clues.</strong></span><span class="hero-line hero-line-2"><strong>One word.</strong></span><span class="hero-line hero-line-3"><span class="hero-soft">Win and </span><strong>Switch it up.</strong></span></div>
 
 <div class="label">What should we call you?</div><input id="playerName" class="field" maxlength="18" placeholder="Enter your name" autocomplete="nickname">
 <div class="muted" style="font-size:12px;margin-top:10px">Please refrain from using Fruity words! ;)</div><p id="nameError" class="muted" style="color:var(--bad);min-height:18px;margin:6px 0 0"></p>
