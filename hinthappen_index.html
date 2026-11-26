@@ -162,6 +162,11 @@ body::before{content:"";position:fixed;inset:-18%;z-index:0;pointer-events:none;
 body.paint-blend::before{animation:paintBloom 1.45s cubic-bezier(.2,.7,.25,1) both}
 @keyframes paintBloom{0%{opacity:0;transform:scale(.72) translate(-5%,3%)}18%{opacity:.75}55%{opacity:.48;transform:scale(1.08) translate(2%,-1%)}100%{opacity:0;transform:scale(1.18) translate(0,0)}}
 @media(prefers-reduced-motion:reduce){body.paint-blend::before{animation-duration:.25s}}
+/* Hard-mode pictorial clue cards */
+.picture-hint-face{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;width:100%;padding:4px}
+.picture-hint-title{font-size:10px;letter-spacing:.12em;font-weight:850;color:var(--accent);text-transform:uppercase}
+.picture-hint-art{font-size:clamp(30px,8vw,44px);line-height:1.3;letter-spacing:.08em;filter:drop-shadow(0 2px 1px #0001)}
+.picture-hint-note{font-size:11px;color:var(--muted);font-weight:650}
 </style></head><body><main class="wrap">
 <header class="header"><div class="brand">💡 HINTS HAPPEN!</div><div class="badge" id="status">LOADING WORDS</div></header>
 <section id="home" class="screen active"><div class="panel">
@@ -387,6 +392,7 @@ let matchThemeIndex=-1;const MATCH_THEMES=[["#f7f2df","#a98758","#efe0ae","#5b4d
    Series:["🎭 Dialogue: “Bas one more episode… pakka last!” — The binge-watcher","🎭 Dialogue: “Previously on… wait, what happened?” — The sleepy fan","🎭 Dialogue: “I have a theory, and three seasons of evidence!” — The detective","🎭 Dialogue: “Don’t spoil it. I’m only two episodes behind!” — The friend"]
   };
   if(dialoguePools[c]){const slot=Math.floor(Math.random()*clues.length),line=dialoguePools[c][Math.floor(Math.random()*dialoguePools[c].length)];clues[slot]=line;}
+  if(difficulty==="hard"&&["Countries & Regions","Places","Food","Animals"].includes(c)){clues[0]="PICTURE_HINT|"+pictureHintFor(w,c);}
   return shuffle(clues);
  }
  function makeRoomId(){const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",bytes=new Uint8Array(10);if(window.crypto?.getRandomValues)window.crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.random()*256|0;return Array.from(bytes,b=>alphabet[b%alphabet.length]).join("")}
@@ -504,7 +510,22 @@ async function fetchModeratedChat(messageId){
  }
  function renderLocalRole(){if(myIndex()===turnGiver)renderHintScreen();else renderGuessScreen();show("playScreen")}
  function renderHintScreen(){if(myIndex()!==turnGiver)return;$("giverKicker").textContent="YOU ARE THE WORD GIVER";$("giverTitle").textContent="Choose a hint to reveal";$("giverHelp").textContent="You can see every hint. Tap one to flip it for both players.";$("maskedCaption").textContent="YOUR SECRET WORD";$("secret").textContent=word;$("revealcount").textContent=revealedHints.length+" of "+hintSet.length+" hints revealed";$("cardsHeading").textContent="YOUR HINT CARDS";$("cardsSubheading").textContent="Tap to reveal live";renderHostClues();renderGuessHistory();$("guessBtn").disabled=true;$("composerMeta").textContent="Waiting for "+names[turnGuesser]+" to guess";renderScoreboards(turnGuesser);show("playScreen")}
- function renderHostClues(){const el=$("liveCards");if(!el)return;el.innerHTML=hintSet.map((h,i)=>'<button class="hint '+(revealedHints.includes(i)?"is-revealed":"")+'" data-i="'+i+'" '+(revealedHints.includes(i)||!roundActive?"disabled":"")+'><small>HINT '+(i+1)+(revealedHints.includes(i)?" · FLIPPED":" · YOUR VIEW")+'</small><span>'+escapeHtml(h)+'</span>'+(revealedHints.includes(i)?"":'<b class="muted">TAP TO REVEAL</b>')+'</button>').join("");el.querySelectorAll(".hint").forEach(b=>b.onclick=()=>revealHintCard(Number(b.dataset.i)));}
+ function pictureHintFor(w,c){
+  const key=normalize(w).replace(/\\s+/g,"");
+  const known={FRANCE:["🗼","🥐","🇫🇷"],PARIS:["🗼","🥐","🚇"],ITALY:["🍕","🏛️","🇮🇹"],ROME:["🏛️","🍝","🇮🇹"],JAPAN:["🗻","🍣","🇯🇵"],TOKYO:["🗼","🚄","🇯🇵"],INDIA:["🕌","🪷","🇮🇳"],DELHI:["🕌","🚕","🇮🇳"],EGYPT:["🐫","🏜️","🔺"],CAIRO:["🐫","🔺","🏜️"],BRAZIL:["⚽","🌴","🇧🇷"],RIO:["🏖️","⚽","🇧🇷"],AUSTRALIA:["🦘","🏄","🇦🇺"],CANADA:["🍁","🏔️","🇨🇦"],USA:["🗽","🍔","🇺🇸"],NEWYORK:["🗽","🚕","🌆"],LONDON:["🎡","🚌","🇬🇧"],UNITEDKINGDOM:["🎡","👑","🇬🇧"],GREECE:["🏛️","🏝️","🇬🇷"],ATHENS:["🏛️","🏺","🇬🇷"],SWITZERLAND:["🏔️","🚞","🧀"],NEPAL:["🏔️","🥾","🇳🇵"],TIBET:["🏔️","🕉️","🧘"],MEXICO:["🌮","🎺","🇲🇽"],THAILAND:["🛕","🍜","🇹🇭"],SINGAPORE:["🦁","🌆","🇸🇬"],DUBAI:["🏙️","🐪","🇦🇪"],VENICE:["🛶","🌉","🇮🇹"],AMSTERDAM:["🚲","🌷","🇳🇱"],MACHUPICCHU:["🦙","⛰️","🏛️"],EVEREST:["🏔️","🥾","🧗"],TAJMAHAL:["🕌","💎","🇮🇳"],EIFFELTOWER:["🗼","🇫🇷","🥐"],GREATWALL:["🧱","🐉","🇨🇳"],PYRAMIDS:["🐫","🔺","🏜️"],COLLOSEUM:["🏟️","🏛️","🇮🇹"],COLISEUM:["🏟️","🏛️","🇮🇹"],BIGBEN:["🕰️","🇬🇧","🎡"],STATUEOFLIBERTY:["🗽","🌊","🇺🇸"]};
+  if(known[key])return known[key].join("  ");
+  if(c==="Countries & Regions")return ["🗺️","🧭","🌐"].join("  ");
+  if(c==="Places")return ["📍","🗺️","🧳"].join("  ");
+  if(c==="Food")return ["🍽️","🥄","😋"].join("  ");
+  if(c==="Animals")return ["🐾","🌳","🔎"].join("  ");
+  return ["🔎","🧩","✨"].join("  ");
+ }
+ function pictureHintMarkup(h){
+  if(!h||!h.startsWith("PICTURE_HINT|"))return '<span>'+escapeHtml(h||"Hint revealed")+'</span>';
+  const visual=h.slice("PICTURE_HINT|".length);
+  return '<span class="picture-hint-face"><span class="picture-hint-title">🖼️ PICTURE CLUE</span><span class="picture-hint-art">'+escapeHtml(visual)+'</span><span class="picture-hint-note">Look for the connection</span></span>';
+ }
+ function renderHostClues(){const el=$("liveCards");if(!el)return;el.innerHTML=hintSet.map((h,i)=>'<button class="hint '+(revealedHints.includes(i)?"is-revealed":"")+'" data-i="'+i+'" '+(revealedHints.includes(i)||!roundActive?"disabled":"")+'><small>HINT '+(i+1)+(revealedHints.includes(i)?" · FLIPPED":" · YOUR VIEW")+'</small>(revealedHints.includes(i)?pictureHintMarkup(h):<span>'+escapeHtml(h)+'</span>)'+(revealedHints.includes(i)?"":'<b class="muted">TAP TO REVEAL</b>')+'</button>').join("");el.querySelectorAll(".hint").forEach(b=>b.onclick=()=>revealHintCard(Number(b.dataset.i)));}
  function revealHintCard(i){if(myIndex()!==turnGiver||!roundActive||revealedHints.includes(i))return;if(role==="host")applyHintReveal(i);else send({type:"hintReveal",index:i})}
  function applyHintReveal(i){if(role!=="host"||!roundActive||revealedHints.includes(i))return;revealedHints.push(i);awaitingHint=false;revealRandom();const d={type:"cardReveal",index:i,hint:hintSet[i],revealed:revealedHints.slice(),letters:letterState(),cardCount:hintSet.length};send(d);renderCardReveal(d);sfx("hint");if(revealedHints.length===hintSet.length&&!guessHistory.some(x=>normalize(x)===normalize(word)))finishWord("hints");if(roundActive&&!timer)startClock()}
  function chooseClue(){}
@@ -515,7 +536,7 @@ async function fetchModeratedChat(messageId){
   const chooser=myIndex()===turnGiver,el=$("liveCards"),count=chooser?hintSet.length:(d.cardCount||hintSet.length||5);
   if(el)el.innerHTML=Array.from({length:count},(_,i)=>{
    const isOpen=revealedHints.includes(i),hintText=chooser?hintSet[i]:revealedHintText[i];
-   const face=isOpen?'<span>'+escapeHtml(hintText||"Hint revealed")+'</span>':chooser?'<span>'+escapeHtml(hintText||"")+'</span><b class="muted">TAP TO REVEAL</b>':'<span class="card-back-icon">✦</span><b>HIDDEN</b>';
+   const face=isOpen?pictureHintMarkup(hintText):chooser?'<span>'+escapeHtml(hintText||"")+'</span><b class="muted">TAP TO REVEAL</b>':'<span class="card-back-icon">✦</span><b>HIDDEN</b>';
    return '<button class="hint '+(isOpen?"is-revealed":"")+'" data-i="'+i+'" '+(isOpen||!chooser||!roundActive?"disabled":"")+'><small>HINT '+(i+1)+(isOpen?" · FLIPPED":"")+'</small>'+face+'</button>';
   }).join("");
   $("cardsHeading").textContent=chooser?"YOUR HINT CARDS":"HINTS REVEALED";
