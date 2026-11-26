@@ -319,7 +319,7 @@ let DB={"Animals":["LION","TIGER","ELEPHANT","GIRAFFE","ZEBRA","RHINO","HIPPOPOT
 PALETTE.Bollywood=["#f7e9df","#b87958","#efd2bd"];PALETTE.Series=["#f0eaf6","#85729f","#ded2ed"];
 PALETTE["Countries & Regions"]=PALETTE.Countries;
 async function loadWordDecks(){
- const response=await fetch("./word-decks.json",{cache:"force-cache"});
+ const response=await fetch("./word-decks.json?v=20261126-bollywood-series",{cache:"no-cache"});
  if(!response.ok)throw new Error("Word deck file returned "+response.status);
  const payload=await response.json(),categories=payload?.categories;
  const requiredCategories=["Animals","Countries & Regions","Food","Places","Movies","Bollywood","Series","Music","Sports"];
